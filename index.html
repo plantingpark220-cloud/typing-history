@@ -21,76 +21,99 @@
     p.subtitle { color: #555; margin-bottom: 32px; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
     }
     article {
       background: white;
-      border: 1px solid #ccd7ce;
-      border-radius: 18px;
-      padding: 24px;
+      border: 2px solid #dcd7c9;
+      border-radius: 12px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    h2 { font-size: 20px; margin-top: 0; }
-    a.btn {
+    article:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    article.highlight {
+      border: 2px solid #c9a050;
+      background: #fefce8;
+    }
+    h2 { font-size: 20px; margin-bottom: 10px; color: #111; }
+    p { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .btn {
       display: inline-block;
-      margin-top: 16px;
-      padding: 8px 16px;
-      background: #245e50;
+      text-align: center;
+      padding: 10px 16px;
+      background: #243e38;
       color: white;
       text-decoration: none;
-      border-radius: 8px;
-      text-align: center;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
     }
-    a.btn:hover { background: #1b473c; }
+    .btn-magic {
+      background: linear-gradient(135deg, #c9a050, #8e5225);
+      color: white;
+      box-shadow: 0 2px 8px rgba(201,160,80,0.4);
+    }
   </style>
 </head>
 <body>
+  <main>
+    <h1>英打遊戲開發歷程</h1>
+    <p class="subtitle">陳又霆 (U11517004) - 期末專題演進展示</p>
 
-<main>
-  <h1>英打遊戲開發歷程</h1>
-  <p class="subtitle">紀錄從雛型、多媒體應用到完整遊戲的開發過程。</p>
+    <div class="grid">
+      <!-- 卡片 1 -->
+      <article>
+        <div>
+          <h2>任務一｜版本一</h2>
+          <p>基礎鍵盤結構建立，包含基本按鍵觸發與事件監聽。</p>
+        </div>
+        <a href="https://u11517004.github.io/typing-v1/" target="_blank" class="btn">開啟版本一</a>
+      </article>
 
-  <div class="grid">
-    <!-- 卡片 1 -->
-    <article>
-      <div>
-        <h2>任務一｜版本一</h2>
-        <p>只有標題與開始按鈕的基礎網頁架構。</p>
-      </div>
-      <a href="https://u11517004.github.io/typing-v1/" target="_blank" class="btn">開啟版本一 →</a>
-    </article>
+      <!-- 卡片 2 -->
+      <article>
+        <div>
+          <h2>任務二｜版本二</h2>
+          <p>加入鍵盤示意圖片與點擊發音音效。</p>
+        </div>
+        <a href="https://u11517004.github.io/typing-v2/" target="_blank" class="btn">開啟版本二</a>
+      </article>
 
-    <!-- 卡片 2 -->
-    <article>
-      <div>
-        <h2>任務二｜版本二</h2>
-        <p>加入鍵盤示意圖片與點擊發聲音效。</p>
-      </div>
-      <a href="https://u11517004.github.io/typing-v2/" target="_blank" class="btn">開啟版本二 →</a>
-    </article>
+      <!-- 卡片 3 -->
+      <article>
+        <div>
+          <h2>任務四｜版本三</h2>
+          <p>ASDF 左手 4 鍵基礎練習，按鍵視覺回饋得分。</p>
+        </div>
+        <a href="v3/index.html" class="btn">開啟陣列 ASDF</a>
+      </article>
 
-    <!-- 卡片 3 -->
-    <article>
-      <div>
-        <h2>任務四｜版本三</h2>
-        <p>ASDF 左手 4 鍵基礎練習，按對鍵盤得分。</p>
-      </div>
-      <a href="v3/index.html" class="btn">開始練習 ASDF →</a>
-    </article>
+      <!-- 卡片 4 -->
+      <article>
+        <div>
+          <h2>任務五｜版本四</h2>
+          <p>十手手指母音遊戲，考察反應速度與鍵盤熟悉度。</p>
+        </div>
+        <a href="v4/index.html" class="btn">挑戰十指掉落</a>
+      </article>
 
-    <!-- 卡片 4 (新增 v4 掉落遊戲) -->
-    <article>
-      <div>
-        <h2>任務五｜版本四</h2>
-        <p>十鍵字母掉落遊戲，考驗反應與鍵盤熟悉度。</p>
-      </div>
-      <a href="v4/index.html" class="btn">挑戰十鍵掉落 →</a>
-    </article>
-  </div>
-</main>
-
+      <!-- 卡片 5 (期末提案魔法型) -->
+      <article class="highlight">
+        <div>
+          <h2>期末提案｜SpellCraft</h2>
+          <p>中世紀魔法奇幻主題，含咒語詠唱與關卡測驗。</p>
+        </div>
+        <a href="v5/index.html" class="btn btn-magic">進入魔法試煉 ➔</a>
+      </article>
+    </div>
+  </main>
 </body>
 </html>
