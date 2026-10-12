@@ -24,9 +24,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      overflow: hidden;
+      justify-content: center;
       background-image: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #090a0f 70%);
+      padding: 20px;
     }
     header {
       width: 100%;
@@ -37,38 +37,39 @@
       align-items: center;
       background: var(--panel-bg);
       border: 2px solid var(--border-gold);
-      border-radius: 0 0 16px 16px;
+      border-radius: 12px 12px 0 0;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      margin-bottom: 10px;
     }
     .title { font-size: 20px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 10px rgba(201,160,80,0.5); }
-    .hud { display: flex; gap: 20px; font-size: 14px; }
+    .hud { display: flex; gap: 20px; font-size: 16px; }
     .hud-val { color: var(--accent-blue); font-weight: bold; }
     #game-canvas {
-      width: 900px;
-      height: 380px;
-      background: rgba(10, 12, 24, 0.6);
-      border: 2px solid rgba(201,160,80,0.3);
-      border-radius: 12px;
+      width: 100%;
+      max-width: 900px;
+      height: 400px;
+      background: rgba(10, 12, 24, 0.7);
+      border-left: 2px solid var(--border-gold);
+      border-right: 2px solid var(--border-gold);
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
     }
     .keyboard {
+      width: 100%;
+      max-width: 900px;
       background: var(--panel-bg);
       border: 2px solid var(--border-gold);
-      border-radius: 16px 16px 0 0;
+      border-radius: 0 0 12px 12px;
       padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
-      margin-top: 10px;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
     .key-row { display: flex; justify-content: center; gap: 6px; }
     .key {
-      width: 42px;
-      height: 42px;
+      width: 45px;
+      height: 45px;
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(201,160,80,0.4);
       border-radius: 6px;
@@ -76,20 +77,20 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 16px;
       color: #94a3b8;
       transition: all 0.1s ease;
     }
     .key.active {
       background: var(--border-gold);
       color: #000;
-      box-shadow: 0 0 12px var(--text-gold);
-      transform: scale(0.95);
+      box-shadow: 0 0 15px var(--text-gold);
+      transform: scale(0.92);
     }
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(13, 14, 21, 0.9);
+      background: rgba(13, 14, 21, 0.85);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -98,18 +99,34 @@
       z-index: 10;
     }
     .btn {
-      padding: 12px 28px;
+      padding: 12px 32px;
       background: linear-gradient(135deg, #c9a050, #8e5225);
       border: none;
       border-radius: 8px;
       color: #fff;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(201,160,80,0.3);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 15px rgba(201,160,80,0.4);
+      transition: transform 0.2s, background 0.2s;
     }
     .btn:hover { transform: scale(1.05); }
+    .enemy {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(192, 132, 252, 0.2);
+      border: 2px solid var(--accent-purple);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 22px;
+      color: var(--text-gold);
+      box-shadow: 0 0 15px var(--accent-purple);
+      transition: top 0.1s linear;
+    }
   </style>
 </head>
 <body>
@@ -117,7 +134,7 @@
   <header>
     <div class="title">✨ SpellCraft Typing：鍵盤魔導士</div>
     <div class="hud">
-      <div>生命值: <span id="hp-val" class="hud-val" style="color:#ef4444;">100</span></div>
+      <div>生命值: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
       <div>分數: <span id="score-val" class="hud-val">0</span></div>
       <div>連擊: <span id="combo-val" class="hud-val">0x</span></div>
       <div>關卡: <span id="level-val" class="hud-val">1/3</span></div>
@@ -126,14 +143,14 @@
 
   <div id="game-canvas">
     <div id="start-screen" class="overlay">
-      <h1 style="color: var(--text-gold);">魔法學院鍵盤試煉</h1>
+      <h1 style="color: var(--text-gold); font-size: 32px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8;">詠唱正確的符文與咒語，擊退進犯的魔物！</p>
-      <button class="btn" onclick="startGame()">開始詠唱試煉</button>
+      <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
     <div id="gameover-screen" class="overlay" style="display: none;">
-      <h1 id="end-title" style="color: var(--text-gold);">試煉結果</h1>
-      <p id="end-desc" style="color: #94a3b8;"></p>
-      <button class="btn" onclick="startGame()">重新嘗試</button>
+      <h1 id="end-title" style="color: var(--text-gold); font-size: 32px;">試煉結果</h1>
+      <p id="end-desc" style="color: #94a3b8; font-size: 18px;"></p>
+      <button class="btn" id="restart-btn">重新嘗試</button>
     </div>
   </div>
 
@@ -145,7 +162,7 @@
       ["A","S","D","F","G","H","J","K","L"],
       ["Z","X","C","V","B","N","M"]
     ];
-    
+
     function initKeyboard() {
       const container = document.getElementById('virtual-keyboard');
       container.innerHTML = '';
@@ -164,14 +181,76 @@
     }
 
     let hp = 100, score = 0, combo = 0, level = 1, isPlaying = false;
-    let targets = [];
+    let enemies = [];
+    let gameInterval = null, spawnInterval = null;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, duration) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
 
     function startGame() {
       hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
+      enemies.forEach(e => e.el.remove());
+      enemies = [];
+
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
       updateHUD();
-      spawnLoop();
+
+      if (gameInterval) clearInterval(gameInterval);
+      if (spawnInterval) clearInterval(spawnInterval);
+
+      gameInterval = setInterval(updateGame, 50);
+      spawnInterval = setInterval(spawnEnemy, 1500);
+    }
+
+    function spawnEnemy() {
+      if (!isPlaying) return;
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const canvas = document.getElementById('game-canvas');
+      const x = Math.floor(Math.random() * (canvas.clientWidth - 60)) + 10;
+
+      const el = document.createElement('div');
+      el.className = 'enemy';
+      el.innerText = char;
+      el.style.left = x + 'px';
+      el.style.top = '0px';
+      canvas.appendChild(el);
+
+      enemies.push({ char, x, y: 0, speed: 1.5 + level * 0.5, el });
+    }
+
+    function updateGame() {
+      if (!isPlaying) return;
+      const canvasHeight = document.getElementById('game-canvas').clientHeight;
+
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        e.y += e.speed;
+        e.el.style.top = e.y + 'px';
+
+        if (e.y >= canvasHeight - 50) {
+          hp -= 10;
+          combo = 0;
+          playBeep(150, 0.2);
+          e.el.remove();
+          enemies.splice(i, 1);
+          updateHUD();
+
+          if (hp <= 0) gameOver(false);
+        }
+      }
     }
 
     function updateHUD() {
@@ -181,10 +260,50 @@
       document.getElementById('level-val').innerText = level + '/3';
     }
 
-    function spawnLoop() {
-      if (!isPlaying) return;
-      // 遊戲主邏輯簡化展示
-      updateHUD();
+    function gameOver(win) {
+      isPlaying = false;
+      clearInterval(gameInterval);
+      clearInterval(spawnInterval);
+
+      const screen = document.getElementById('gameover-screen');
+      document.getElementById('end-title').innerText = win ? '🎉 試煉成功！' : '💀 試煉失敗';
+      document.getElementById('end-desc').innerText = `最終得分：${score} 分 | 最大連擊：${combo}x`;
+      screen.style.display = 'flex';
     }
 
     window.addEventListener('keydown', (e) => {
+      if (!isPlaying) return;
+      const k = e.key.toUpperCase();
+
+      const keyEl = document.getElementById(`key-${k}`);
+      if (keyEl) {
+        keyEl.classList.add('active');
+        setTimeout(() => keyEl.classList.remove('active'), 120);
+      }
+
+      const index = enemies.findIndex(e => e.char === k);
+      if (index !== -1) {
+        playBeep(600, 0.1);
+        enemies[index].el.remove();
+        enemies.splice(index, 1);
+        combo++;
+        score += 10 + combo * 2;
+
+        if (score >= 100 && level === 1) level = 2;
+        if (score >= 250 && level === 2) level = 3;
+        if (score >= 400) gameOver(true);
+
+        updateHUD();
+      } else {
+        combo = 0;
+        updateHUD();
+      }
+    });
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+
+    initKeyboard();
+  </script>
+</body>
+</html>
