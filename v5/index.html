@@ -1,3 +1,15 @@
+明白你的意思了！
+
+也就是：
+
+1. **Stage 1 & 2（單一字母階段）**：維持大寫字母（如 `A`, `S`, `D` ...），方便學習者辨識鍵盤位置。
+2. **Stage 3 & 4（單字/咒語階段）**：顯示為**清晰小寫單字**（如 `fire`, `mage`, `spell`, `water` ...），符合日常英文輸入與練習習慣！
+
+---
+
+### 💻 請將 `v5/index.html` 替換為這份最終版本：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -57,7 +69,6 @@
       box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
     }
 
-    /* 魔龍 BOSS 與血量條 */
     #boss-container {
       position: absolute;
       top: 10px;
@@ -162,7 +173,6 @@
       text-shadow: 0 0 3px #fff;
       z-index: 2;
       letter-spacing: 2px;
-      text-transform: lowercase; /* 改為清晰小寫顯示 */
     }
     .typed-char { color: #22c55e; text-shadow: 0 0 5px #4ade80; font-weight: 900; }
 
@@ -296,7 +306,6 @@
   </header>
 
   <div id="game-canvas">
-    <!-- 魔龍 BOSS 標示與血量條 -->
     <div id="boss-container">
       <div class="boss-name">🐉 魔龍 (BOSS)</div>
       <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
@@ -312,7 +321,7 @@
     <div id="start-screen" class="overlay">
       <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（asdfghjkl;）</b>
+        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
@@ -341,15 +350,15 @@
 
   <script>
     const keysLayout = [
-      ["q","w","e","r","t","y","u","i","o","p"],
-      ["a","s","d","f","g","h","j","k","l",";"],
-      ["z","x","c","v","b","n","m"]
+      ["Q","W","E","R","T","Y","U","I","O","P"],
+      ["A","S","D","F","G","H","J","K","L",";"],
+      ["Z","X","C","V","B","N","M"]
     ];
 
-    // 精簡短小的常用英文魔法單字（小寫）
+    // Stage 1 & 2: 保持大寫字母，Stage 3 & 4: 清晰小寫單字
     const levelKeyPool = {
-      1: ["a","s","d","f","g","h","j","k","l",";"],
-      2: ["q","w","e","r","t","y","u","i","o","p"],
+      1: ["A","S","D","F","G","H","J","K","L",";"],
+      2: ["Q","W","E","R","T","Y","U","I","O","P"],
       3: ["fire", "mage", "spell", "water", "heal"],
       4: ["light", "dark", "cast", "power", "rune", "flame"]
     };
@@ -473,7 +482,6 @@
 
     function resetSpawning() {
       if (spawnInterval) clearInterval(spawnInterval);
-      // 放慢生成頻率，確保體驗舒適
       const spawnTime = Math.max(1600, 2600 - (level * 200));
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
@@ -494,7 +502,7 @@
 
     function spawnEnemy() {
       if (!isPlaying) return;
-      const maxEnemies = 2; // 限制畫面上同時出現最多 2 個火球
+      const maxEnemies = 2;
       if (enemies.length >= maxEnemies) return;
 
       const pool = levelKeyPool[level];
@@ -513,7 +521,6 @@
       canvas.appendChild(el);
 
       playFireSwoosh();
-      // 大幅放慢火球掉落速度（減速50%）
       enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.45 + (level * 0.08), el });
     }
 
@@ -643,7 +650,7 @@
             updateHUD();
 
             if (score >= 300 && level === 1) {
-              triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（qwertyuiop）！");
+              triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
             } else if (score >= 700 && level === 2) {
               triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 擊退魔龍（討伐魔龍 BOSS）！");
@@ -726,10 +733,11 @@
     function handleKeyPress(k) {
       if (!isPlaying) return;
       
-      const charLower = k.toLowerCase();
+      const inputChar = (level <= 2) ? k.toUpperCase() : k.toLowerCase();
       totalKeystrokes++;
       
-      const elementId = charLower === ';' ? 'key-semicolon' : `key-${charLower}`;
+      const keyIdChar = inputChar.toUpperCase();
+      const elementId = keyIdChar === ';' ? 'key-semicolon' : `key-${keyIdChar}`;
       const keyEl = document.getElementById(elementId);
       if (keyEl) {
         keyEl.classList.add('active');
@@ -738,7 +746,7 @@
 
       if (activeTarget && enemies.includes(activeTarget)) {
         const expectedChar = activeTarget.word[activeTarget.typedIndex];
-        if (charLower === expectedChar) {
+        if (inputChar === expectedChar) {
           correctKeystrokes++;
           activeTarget.typedIndex++;
           renderWordProgress(activeTarget);
@@ -755,7 +763,7 @@
         return;
       }
 
-      const targetEnemy = enemies.find(e => e.word[e.typedIndex] === charLower);
+      const targetEnemy = enemies.find(e => e.word[e.typedIndex] === inputChar);
       if (targetEnemy) {
         correctKeystrokes++;
         targetEnemy.typedIndex++;
@@ -767,14 +775,14 @@
           activeTarget = targetEnemy;
         }
       } else {
-        errorHeatmap[charLower] = (errorHeatmap[charLower] || 0) + 1;
+        errorHeatmap[inputChar] = (errorHeatmap[inputChar] || 0) + 1;
         combo = 0;
       }
       updateHUD();
     }
 
     window.addEventListener('keydown', (e) => {
-      let key = e.key.toLowerCase();
+      let key = e.key;
       if (e.key === ';') key = ';';
       handleKeyPress(key);
     });
@@ -787,3 +795,5 @@
   </script>
 </body>
 </html>
+
+```
