@@ -243,7 +243,6 @@
       z-index: 10;
     }
 
-    /* 修正後的羊皮紙卡片，高對比度文字 */
     .parchment-card {
       background: var(--parchment-bg);
       color: var(--parchment-text);
@@ -313,7 +312,6 @@
       transform: scale(0.92);
     }
 
-    /* 關鍵修復：高對比清晰面板樣式 */
     .heatmap-box {
       background: #ebd8b3;
       border: 2px solid #8a6d20;
@@ -927,6 +925,17 @@
       }
     }
 
+    // ⚡ 秒殺跳關邏輯 (快捷鍵 Ctrl + Shift + L)
+    function forcePassLevel() {
+      if (!isPlaying) return;
+      if (level < 5) {
+        levelHits = 99; // 觸發普通關卡通關
+      } else {
+        bossHp = 0; // 秒殺 BOSS
+      }
+      updateGame();
+    }
+
     function handleKeyPress(k) {
       if (!isPlaying) return;
       
@@ -983,6 +992,13 @@
     }
 
     window.addEventListener('keydown', (e) => {
+      // 快捷鍵跳關測試：Ctrl + Shift + L
+      if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+        e.preventDefault();
+        forcePassLevel();
+        return;
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         cancelActiveTarget();
         return;
