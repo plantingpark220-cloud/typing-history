@@ -316,7 +316,7 @@
 
     <div id="level-up-screen" class="overlay" style="display: none;">
       <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
-      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text">恭喜獲得稱號：🌱 【初級魔導士】</p>
+      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text"></p>
       <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
@@ -376,7 +376,7 @@
       });
     }
 
-    let hp = 100, score = 0, combo = 0, level = 1, levelHits = 0, isPlaying = false;
+    let hp = 100, score = 0, levelScore = 0, combo = 0, level = 1, levelHits = 0, isPlaying = false;
     let bossHp = 100, maxBossHp = 100;
     let enemies = [];
     let waterSpells = [];
@@ -444,7 +444,7 @@
 
     function startGame() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      hp = 100; score = 0; combo = 0; level = 1; levelHits = 0; isPlaying = true;
+      hp = 100; score = 0; levelScore = 0; combo = 0; level = 1; levelHits = 0; isPlaying = true;
       totalKeystrokes = 0; correctKeystrokes = 0; errorHeatmap = {};
       startTime = Date.now();
       activeTarget = null;
@@ -564,29 +564,36 @@
       setTimeout(() => exp.remove(), 300);
     }
 
-    // 計算精準的「七大位階稱號」
-    function calculateTitle(curLevel, curScore, win = false) {
-      if (win && curLevel === 5) return "👑 【神級】 (大賢者)";
-      if (curScore >= 1800 || curLevel === 5) return "⚡ 【帝級】 魔法使";
-      if (curScore >= 1300 || curLevel === 4) return "🔥 【王級】 魔法使";
-      if (curScore >= 900) return "🔮 【聖級】 導師";
-      if (curScore >= 600 || curLevel === 3) return "⚔️ 【上級】 魔導士";
-      if (curScore >= 350 || curLevel === 2) return "📜 【中級】 詠唱者";
-      return "🌱 【初級】 見習生";
+    // 計算每一關獨立的 5 階稱號（初級 -> 中級 -> 上級 -> 王級 -> 神級）
+    function getStageRankTitle(lvl, curScore) {
+      let baseJob = "元素使";
+      if (lvl === 3) baseJob = "魔導士";
+      else if (lvl >= 4) baseJob = "大賢者";
+
+      let rankTier = "🌱 初級";
+      if (curScore >= 260) rankTier = "👑 神級";
+      else if (curScore >= 210) rankTier = "🔥 王級";
+      else if (curScore >= 160) rankTier = "⚔️ 上級";
+      else if (curScore >= 110) rankTier = "📜 中級";
+
+      return `${rankTier}${baseJob}`;
     }
 
-    function triggerLevelUp(nextLvl, rankName, desc) {
+    function triggerLevelUp(nextLvl, desc) {
       isPlaying = false;
       clearInterval(gameInterval);
       clearInterval(spawnInterval);
       clearCanvasElements();
 
-      document.getElementById('rank-title-text').innerText = `恭喜位階晉升：${rankName}`;
+      const rankTitle = getStageRankTitle(level, levelScore);
+
+      document.getElementById('rank-title-text').innerText = `恭喜獲得：${rankTitle}`;
       document.getElementById('level-up-desc').innerText = desc;
       document.getElementById('level-up-screen').style.display = 'flex';
 
       level = nextLvl;
       levelHits = 0;
+      levelScore = 0; // 重置下一關的單關得分
       if (level >= 4) setupBossStage();
       updateHUD();
     }
@@ -651,7 +658,9 @@
             enemies.splice(eIdx, 1);
             combo++;
             levelHits++;
-            score += 15 + combo * 3;
+            const earned = 15 + combo * 3;
+            score += earned;
+            levelScore += earned;
 
             if (level >= 4) {
               bossHp -= 20;
@@ -660,18 +669,17 @@
 
             updateHUD();
 
-            // 七階評定過場
             if (levelHits >= 12 && level === 1) {
-              triggerLevelUp(2, "📜 【中級】 詠唱者", "成功掌握 Home Row 基準鍵！準備晉升 Stage 2 挑戰上排字母！");
+              triggerLevelUp(2, "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
             } else if (levelHits >= 12 && level === 2) {
-              triggerLevelUp(3, "⚔️ 【上級】 魔導士", "上排指法掌控完美！準備晉升 Stage 3 挑戰下排字母（ZXCVBNM）！");
+              triggerLevelUp(3, "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
               return;
             } else if (levelHits >= 12 && level === 3) {
-              triggerLevelUp(4, "🔮 【聖級】 導師", "全字母基礎扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
+              triggerLevelUp(4, "三排指法基礎完全扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
               return;
             } else if (bossHp <= 0 && level === 4) {
-              triggerLevelUp(5, "🔥 【王級】 魔法使", "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
+              triggerLevelUp(5, "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
               return;
             } else if (bossHp <= 0 && level === 5) {
               gameOver(true);
@@ -711,7 +719,7 @@
       const finalWpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
       const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
 
-      const finalRankTitle = calculateTitle(level, score, win);
+      const finalRankTitle = getStageRankTitle(level, levelScore);
 
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
@@ -722,8 +730,8 @@
       } else {
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
-          當前達成位階：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
-          <span style="color:#ef4444; font-size:12px;">生命值歸零，請再接再厲提高指法熟練度！</span>
+          當前關卡評定：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
+          <span style="color:#ef4444; font-size:12px;">生命值歸零，請再接再厲提升打字準確率！</span>
         `;
       }
 
@@ -741,6 +749,15 @@
 
       document.getElementById('heatmap-content').innerHTML = heatmapHtml;
       screen.style.display = 'flex';
+    }
+
+    // 重置目前正在打的單字/目標
+    function cancelActiveTarget() {
+      if (activeTarget) {
+        activeTarget.typedIndex = 0;
+        renderWordProgress(activeTarget);
+        activeTarget = null;
+      }
     }
 
     function handleKeyPress(k) {
@@ -795,6 +812,11 @@
     }
 
     window.addEventListener('keydown', (e) => {
+      // 支援按 Delete 或 Backspace 放棄並切換目標
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        cancelActiveTarget();
+        return;
+      }
       let key = e.key;
       if (e.key === ';') key = ';';
       handleKeyPress(key);
