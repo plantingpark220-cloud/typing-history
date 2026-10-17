@@ -344,14 +344,14 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
-    // 完美的 6 關漸進池：中排 ➔ 上排 ➔ 下排 ➔ 全鍵盤三排混合 ➔ 高階單字 ➔ 專有名詞咒語
+    // 精簡後的 6 關池：第 6 關直接結合高階單字與專有名詞組合咒語
     const levelKeyPool = {
       1: ["A","S","D","F","G","H","J","K","L",";"],
       2: ["Q","W","E","R","T","Y","U","I","O","P"],
       3: ["Z","X","C","V","B","N","M"],
       4: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",";"],
-      5: ["blizzard", "lightning", "explosion", "avalanche", "sanctuary", "meteorite", "hurricane", "elemental"],
-      6: ["cumulonimbus", "water splash", "icicle edge", "flood flash", "icicle field", "ice smash", "absolute zero", "frost breath"]
+      5: ["fire", "water", "spell", "heal", "shield", "mana", "storm", "spark", "frost", "sword"],
+      6: ["blizzard", "lightning", "explosion", "water splash", "icicle edge", "flood flash", "icicle field", "ice smash", "frost breath"]
     };
 
     function initKeyboard() {
@@ -482,7 +482,7 @@
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
       bossUI.style.display = 'flex';
-      maxBossHp = level === 5 ? 120 : 180;
+      maxBossHp = 160;
       bossHp = maxBossHp;
       updateBossHPBar();
     }
@@ -571,8 +571,8 @@
 
     function getStageRankTitle(lvl, curScore) {
       let baseJob = "元素使";
-      if (lvl === 3 || lvl === 4) baseJob = "魔導士";
-      else if (lvl >= 5) baseJob = "大賢者";
+      if (lvl === 3 || lvl === 4 || lvl === 5) baseJob = "魔導士";
+      else if (lvl >= 6) baseJob = "大賢者";
 
       const currentAcc = totalKeystrokes > 0 ? (correctKeystrokes / totalKeystrokes) * 100 : 100;
 
@@ -600,7 +600,7 @@
       level = nextLvl;
       levelHits = 0;
       levelScore = 0;
-      if (level >= 5) setupBossStage();
+      if (level >= 6) setupBossStage();
       updateHUD();
     }
 
@@ -668,8 +668,8 @@
             score += earned;
             levelScore += earned;
 
-            if (level >= 5) {
-              bossHp -= 25;
+            if (level >= 6) {
+              bossHp -= 20;
               updateBossHPBar();
             }
 
@@ -685,10 +685,10 @@
               triggerLevelUp(4, "三排單排指法全部上手！準備進入 Stage 4 全鍵盤 A~Z 三排混合盲打過渡訓練！");
               return;
             } else if (levelHits >= 15 && level === 4) {
-              triggerLevelUp(5, "全鍵盤盲打基礎完全扎實！準備進入 Stage 5 魔龍討伐戰（高階魔法單字詠唱）！");
+              triggerLevelUp(5, "全鍵盤盲打基礎扎實！準備進入 Stage 5 基礎常用單字詠唱（fire, water, spell 等）！");
               return;
-            } else if (bossHp <= 0 && level === 5) {
-              triggerLevelUp(6, "成功將魔龍擊退！準備迎接 Stage 6 終極魔龍組合咒語試煉（Cumulonimbus, Icicle Edge 等）！");
+            } else if (levelHits >= 12 && level === 5) {
+              triggerLevelUp(6, "單字盲打基礎扎實！準備進入 Stage 6 終極魔龍討伐戰（高階單字與專有名詞組合咒語）！");
               return;
             } else if (bossHp <= 0 && level === 6) {
               gameOver(true);
