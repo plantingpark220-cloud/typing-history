@@ -13,7 +13,7 @@
       --text-gold: #fde047;
       --text-main: #f3f4f6;
       --danger: #ef4444;
-      --parchment-bg: rgba(245, 230, 200, 0.95);
+      --parchment-bg: #f5e6c8;
       --parchment-text: #2a1a08;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
@@ -30,7 +30,6 @@
       overflow: hidden;
     }
 
-    /* 遊戲主要外框容器 */
     .game-wrapper {
       width: 100%;
       max-width: 920px;
@@ -70,7 +69,6 @@
       background: #131018;
     }
 
-    /* 中世紀手繪風城堡繪製圖層 */
     #bg-art-canvas {
       position: absolute;
       top: 0;
@@ -90,7 +88,7 @@
       align-items: center;
       gap: 4px;
       z-index: 6;
-      background: rgba(10, 8, 12, 0.7);
+      background: rgba(10, 8, 12, 0.85);
       padding: 8px 16px;
       border-radius: 10px;
       border: 1px solid var(--border-gold);
@@ -233,11 +231,10 @@
       100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
     }
 
-    /* 古典羊皮紙風格選單 */
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 8, 12, 0.85);
+      background: rgba(10, 8, 12, 0.88);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -246,15 +243,16 @@
       z-index: 10;
     }
 
+    /* 修正後的羊皮紙卡片，高對比度文字 */
     .parchment-card {
       background: var(--parchment-bg);
       color: var(--parchment-text);
-      border: 3px solid #8a6d20;
+      border: 3px solid #785a22;
       border-radius: 12px;
       padding: 24px 32px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(184, 134, 11, 0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(184, 134, 11, 0.2);
       text-align: center;
-      max-width: 460px;
+      max-width: 480px;
       width: 90%;
       display: flex;
       flex-direction: column;
@@ -264,10 +262,10 @@
 
     .btn {
       padding: 12px 36px;
-      background: linear-gradient(135deg, #8a5a22, #4a2f11);
+      background: linear-gradient(135deg, #785a22, #3d2a1d);
       border: 2px solid var(--border-gold);
       border-radius: 8px;
-      color: var(--text-gold);
+      color: #fef08a;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
@@ -280,7 +278,6 @@
     }
     .btn:active { transform: scale(0.95); }
 
-    /* 中世紀黑鐵與石磚鍵盤 */
     .keyboard {
       width: 100%;
       background: linear-gradient(180deg, #241a13, #120c08);
@@ -316,25 +313,29 @@
       transform: scale(0.92);
     }
 
+    /* 關鍵修復：高對比清晰面板樣式 */
     .heatmap-box {
-      background: rgba(42, 26, 12, 0.9);
-      border: 1px solid var(--border-gold);
+      background: #ebd8b3;
+      border: 2px solid #8a6d20;
       border-radius: 8px;
-      padding: 10px 15px;
+      padding: 12px 16px;
       width: 100%;
-      font-size: 13px;
+      font-size: 14px;
       text-align: left;
-      color: #3b2005;
+      color: #2a1a08;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
     }
     .heatmap-tag {
       display: inline-block;
-      background: rgba(220, 38, 38, 0.2);
-      border: 1px solid #dc2626;
-      color: #991b1b;
-      padding: 2px 6px;
+      background: #dc2626;
+      border: 1px solid #991b1b;
+      color: #ffffff;
+      padding: 3px 8px;
       border-radius: 4px;
-      margin: 2px;
+      margin: 3px;
       font-weight: bold;
+      font-size: 13px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
   </style>
 </head>
@@ -353,7 +354,6 @@
     </header>
 
     <div id="game-canvas">
-      <!-- 中世紀城堡風景繪製畫布 -->
       <canvas id="bg-art-canvas"></canvas>
 
       <div id="boss-container">
@@ -368,11 +368,10 @@
         <div class="staff-handle"></div>
       </div>
       
-      <!-- 開始畫面 (羊皮紙風格) -->
       <div id="start-screen" class="overlay">
         <div class="parchment-card">
-          <h1 style="color: #6b21a8; font-size: 24px; font-weight: bold;">🏰 魔法學院鍵盤試煉</h1>
-          <p style="font-size: 14px; line-height: 1.6;">
+          <h1 style="color: #581c87; font-size: 24px; font-weight: bold;">🏰 魔法學院鍵盤試煉</h1>
+          <p style="font-size: 14px; line-height: 1.6; color: #3b2005;">
             揮舞水元素法杖擊退烈焰火球！<br>
             <b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
           </p>
@@ -380,25 +379,23 @@
         </div>
       </div>
 
-      <!-- 關卡突破畫面 -->
       <div id="level-up-screen" class="overlay" style="display: none;">
         <div class="parchment-card">
-          <h1 style="color: #0284c7; font-size: 24px; font-weight: bold;">✨ 關卡突破！</h1>
-          <p style="color: #854d0e; font-size: 18px; font-weight: bold;" id="rank-title-text"></p>
-          <p style="font-size: 14px; line-height: 1.5;" id="level-up-desc"></p>
+          <h1 style="color: #0369a1; font-size: 24px; font-weight: bold;">✨ 關卡突破！</h1>
+          <p style="color: #713f12; font-size: 18px; font-weight: bold;" id="rank-title-text"></p>
+          <p style="font-size: 14px; line-height: 1.5; color: #3b2005;" id="level-up-desc"></p>
           <button class="btn" id="next-level-btn">進入下一關</button>
         </div>
       </div>
 
-      <!-- 結算畫面 -->
       <div id="gameover-screen" class="overlay" style="display: none;">
         <div class="parchment-card">
-          <h1 id="end-title" style="color: #9a3412; font-size: 24px; font-weight: bold;">試煉結果</h1>
-          <p id="end-desc" style="font-size: 14px; line-height: 1.5;"></p>
+          <h1 id="end-title" style="color: #7c2d12; font-size: 24px; font-weight: bold;">試煉結果</h1>
+          <p id="end-desc" style="font-size: 15px; line-height: 1.5; color: #3b2005;"></p>
           
           <div class="heatmap-box" id="heatmap-panel">
-            <div style="font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
-            <div id="heatmap-content">系統分析中...</div>
+            <div style="font-weight:bold; margin-bottom:6px; color:#1c0d02;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
+            <div id="heatmap-content" style="color:#2a1a08;">系統分析中...</div>
           </div>
 
           <button class="btn" id="restart-btn">重新嘗試</button>
@@ -410,7 +407,6 @@
   </div>
 
   <script>
-    // 繪製中世紀小鎮與城堡圖案背景
     function drawMedievalBackground() {
       const cvs = document.getElementById('bg-art-canvas');
       const ctx = cvs.getContext('2d');
@@ -420,7 +416,6 @@
       const w = cvs.width;
       const h = cvs.height;
 
-      // 天空漸層 (黃昏與夜幕過渡)
       const skyGradient = ctx.createLinearGradient(0, 0, 0, h);
       skyGradient.addColorStop(0, '#110b1a');
       skyGradient.addColorStop(0.5, '#2a1a2e');
@@ -429,7 +424,6 @@
       ctx.fillStyle = skyGradient;
       ctx.fillRect(0, 0, w, h);
 
-      // 遠山
       ctx.fillStyle = '#221526';
       ctx.beginPath();
       ctx.moveTo(0, h * 0.7);
@@ -441,10 +435,7 @@
       ctx.lineTo(0, h);
       ctx.fill();
 
-      // 中景：中世紀小鎮房屋與尖頂城堡輪廓
       ctx.fillStyle = '#160d19';
-      
-      // 城堡塔樓 1
       ctx.fillRect(w * 0.1, h * 0.4, 45, h * 0.6);
       ctx.beginPath();
       ctx.moveTo(w * 0.1 - 5, h * 0.4);
@@ -452,7 +443,6 @@
       ctx.lineTo(w * 0.1 + 50, h * 0.4);
       ctx.fill();
 
-      // 城堡塔樓 2 (主塔)
       ctx.fillRect(w * 0.8, h * 0.3, 60, h * 0.7);
       ctx.beginPath();
       ctx.moveTo(w * 0.8 - 8, h * 0.3);
@@ -460,7 +450,6 @@
       ctx.lineTo(w * 0.8 + 68, h * 0.3);
       ctx.fill();
 
-      // 小鎮連排房屋屋頂
       ctx.beginPath();
       ctx.moveTo(0, h * 0.8);
       ctx.lineTo(w * 0.15, h * 0.65);
@@ -473,7 +462,6 @@
       ctx.lineTo(0, h);
       ctx.fill();
 
-      // 房屋窗戶微光效果
       ctx.fillStyle = '#fde047';
       ctx.shadowColor = '#fde047';
       ctx.shadowBlur = 8;
@@ -486,7 +474,7 @@
       windowPositions.forEach(([wx, wy]) => {
         ctx.fillRect(wx, wy, 8, 12);
       });
-      ctx.shadowBlur = 0; // 重置光暈
+      ctx.shadowBlur = 0;
     }
 
     const keysLayout = [
@@ -911,20 +899,20 @@
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
           當前關卡評定：<b style="color:#854d0e; font-size: 18px;">${finalRankTitle}</b><br>
-          <span style="color:#dc2626; font-size:12px;">高階咒語錯字率偏高，請提升盲打精準度！</span>
+          <span style="color:#dc2626; font-size:13px; font-weight:bold;">高階咒語錯字率偏高，請提升盲打精準度！</span>
         `;
       }
 
-      let heatmapHtml = `<b>平均速度:</b> ${finalWpm} WPM | <b>準確率:</b> ${finalAcc}%<br>`;
+      let heatmapHtml = `<b>平均速度:</b> <span style="color:#854d0e; font-weight:bold;">${finalWpm} WPM</span> | <b>準確率:</b> <span style="color:#854d0e; font-weight:bold;">${finalAcc}%</span><br>`;
       const sortedErrors = Object.keys(errorHeatmap).sort((a,b) => errorHeatmap[b] - errorHeatmap[a]);
 
       if (sortedErrors.length > 0) {
-        heatmapHtml += `<b>高頻易錯鍵熱點 (Heatmap):</b> `;
+        heatmapHtml += `<div style="margin-top:6px; font-weight:bold;">高頻易錯鍵熱點 (Heatmap):</div> `;
         sortedErrors.slice(0, 4).forEach(k => {
           heatmapHtml += `<span class="heatmap-tag">${k} (${errorHeatmap[k]}次)</span>`;
         });
       } else {
-        heatmapHtml += `<span style="color:#16a34a;">完美表現！未出現明顯易錯按鍵。</span>`;
+        heatmapHtml += `<div style="margin-top:6px; color:#16a34a; font-weight:bold;">✨ 完美表現！未出現明顯易錯按鍵。</div>`;
       }
 
       document.getElementById('heatmap-content').innerHTML = heatmapHtml;
@@ -1009,7 +997,6 @@
     document.getElementById('next-level-btn').addEventListener('click', resumeNextLevel);
     document.getElementById('restart-btn').addEventListener('click', startGame);
 
-    // 初始化中世紀背景繪製與虛擬鍵盤
     drawMedievalBackground();
     initKeyboard();
 
