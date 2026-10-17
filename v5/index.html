@@ -343,7 +343,6 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
-    // Stage 1 & 2: 保持大寫字母，Stage 3 & 4: 清晰小寫單字
     const levelKeyPool = {
       1: ["A","S","D","F","G","H","J","K","L",";"],
       2: ["Q","W","E","R","T","Y","U","I","O","P"],
@@ -376,7 +375,7 @@
       });
     }
 
-    let hp = 100, score = 0, combo = 0, level = 1, isPlaying = false;
+    let hp = 100, score = 0, combo = 0, level = 1, levelHits = 0, isPlaying = false;
     let bossHp = 100, maxBossHp = 100;
     let enemies = [];
     let waterSpells = [];
@@ -443,7 +442,7 @@
 
     function startGame() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
+      hp = 100; score = 0; combo = 0; level = 1; levelHits = 0; isPlaying = true;
       totalKeystrokes = 0; correctKeystrokes = 0; errorHeatmap = {};
       startTime = Date.now();
       activeTarget = null;
@@ -565,6 +564,7 @@
       document.getElementById('level-up-screen').style.display = 'flex';
 
       level = nextLvl;
+      levelHits = 0; // 重置該關卡擊擊次數
       if (level >= 3) setupBossStage();
       updateHUD();
     }
@@ -628,6 +628,7 @@
             target.el.remove();
             enemies.splice(eIdx, 1);
             combo++;
+            levelHits++; // 紀錄該關卡成功擊破次數
             score += 15 + combo * 3;
 
             if (level >= 3) {
@@ -637,10 +638,11 @@
 
             updateHUD();
 
-            if (score >= 300 && level === 1) {
+            // 獨立的關卡突破條件（第一關需打對 15 個字母，第二關 15 個）
+            if (levelHits >= 15 && level === 1) {
               triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
-            } else if (score >= 700 && level === 2) {
+            } else if (levelHits >= 15 && level === 2) {
               triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 擊退魔龍（討伐魔龍 BOSS）！");
               return;
             } else if (bossHp <= 0 && level === 3) {
@@ -684,21 +686,23 @@
       const finalWpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
       const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
 
+      // 精準稱號配發邏輯
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          成功討伐魔龍！<br>
+          完美擊敗魔龍！<br>
           獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 20px;">👑 【大賢者】</b><br>
         `;
       } else {
         let failRank = "🌱 見習學徒";
         if (level === 4) failRank = "🔮 高階魔法使";
         else if (level === 3) failRank = "⚔️ 大符文導師";
-        else if (score >= 300) failRank = "📜 初階元素使";
+        else if (level === 2) failRank = "📜 初階元素使";
 
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
           當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br>
+          <span style="color:#ef4444; font-size:12px;">未能成功通關第 4 關，無法獲得「大賢者」稱號。</span>
         `;
       }
 
