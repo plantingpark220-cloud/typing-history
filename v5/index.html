@@ -14,6 +14,7 @@
       --text-gold: #fef08a;
       --text-main: #f1f5f9;
       --danger: #ef4444;
+      --boss-hp: #22c55e;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
     body {
@@ -31,7 +32,7 @@
     header {
       width: 100%;
       max-width: 900px;
-      padding: 10px 15px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -40,9 +41,10 @@
       border-radius: 12px 12px 0 0;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
-    .title { font-size: 16px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 10px rgba(201,160,80,0.5); }
-    .hud { display: flex; gap: 12px; font-size: 14px; }
+    .title { font-size: 15px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 10px rgba(201,160,80,0.5); }
+    .hud { display: flex; gap: 10px; font-size: 13px; }
     .hud-val { color: var(--accent-blue); font-weight: bold; }
+    
     #game-canvas {
       width: 100%;
       max-width: 900px;
@@ -53,6 +55,28 @@
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+    }
+
+    /* BOSS 怪獸與血量條 */
+    #boss-container {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 6;
+    }
+    .boss-sprite { font-size: 38px; filter: drop-shadow(0 0 10px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
+    .boss-bar-bg { width: 220px; height: 14px; background: rgba(0,0,0,0.7); border: 1.5px solid var(--border-gold); border-radius: 7px; overflow: hidden; }
+    .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width 0.2s; }
+    .boss-name { font-size: 11px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 4px #000; }
+
+    @keyframes bossFloat {
+      from { transform: translateY(0); }
+      to { transform: translateY(8px); }
     }
 
     #mage-staff-container {
@@ -106,14 +130,14 @@
 
     .fireball-container {
       position: absolute;
-      width: 50px;
+      min-width: 60px;
       height: 70px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     .fire-tail {
-      width: 20px;
+      width: 24px;
       height: 30px;
       background: linear-gradient(to top, rgba(249, 115, 22, 0.9), rgba(239, 68, 68, 0.6), transparent);
       border-radius: 50% 50% 20% 20%;
@@ -122,21 +146,24 @@
       margin-bottom: -10px;
     }
     .fireball-head {
-      width: 46px;
-      height: 46px;
+      min-width: 48px;
+      height: 48px;
+      padding: 0 10px;
       background: radial-gradient(circle, #fff7ed 10%, #f97316 50%, #dc2626 90%);
-      border-radius: 50%;
+      border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 20px;
+      font-size: 18px;
       color: #0f172a;
       box-shadow: 0 0 15px #f97316, 0 0 30px #ef4444;
       border: 2px solid #ffedd5;
       text-shadow: 0 0 5px #fff;
       z-index: 2;
+      letter-spacing: 1px;
     }
+    .typed-char { color: #22c55e; text-shadow: 0 0 5px #4ade80; }
 
     @keyframes flameFlicker {
       0% { transform: scaleX(0.9) scaleY(1); opacity: 0.8; }
@@ -156,8 +183,8 @@
 
     .explosion {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
       background: radial-gradient(circle, #ffffff 0%, #38bdf8 40%, #f97316 70%, transparent 100%);
       transform: translate(-50%, -50%) scale(0.2);
@@ -231,6 +258,28 @@
       transition: transform 0.2s;
     }
     .btn:active { transform: scale(0.95); }
+
+    /* 熱點分析樣式 */
+    .heatmap-box {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      padding: 10px 15px;
+      width: 85%;
+      max-width: 400px;
+      font-size: 12px;
+      text-align: left;
+    }
+    .heatmap-tag {
+      display: inline-block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin: 2px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -239,13 +288,21 @@
     <div class="title">✨ SpellCraft Typing</div>
     <div class="hud">
       <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
+      <div>WPM: <span id="wpm-val" class="hud-val">0</span></div>
+      <div>ACC: <span id="acc-val" class="hud-val">100%</span></div>
       <div>分: <span id="score-val" class="hud-val">0</span></div>
-      <div>連擊: <span id="combo-val" class="hud-val">0x</span></div>
       <div>關: <span id="level-val" class="hud-val">1/4</span></div>
     </div>
   </header>
 
   <div id="game-canvas">
+    <!-- BOSS 魔物血量區域 -->
+    <div id="boss-container">
+      <div class="boss-name">🔥 暗黑遠古炎魔 (STAGE 3 & 4 BOSS)</div>
+      <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
+      <div class="boss-sprite">🐉</div>
+    </div>
+
     <div id="mage-staff-container">
       <div class="staff-head"></div>
       <div class="staff-orb"></div>
@@ -267,9 +324,17 @@
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
 
+    <!-- 結算畫面與錯字熱點分析 -->
     <div id="gameover-screen" class="overlay" style="display: none;">
-      <h1 id="end-title" style="color: var(--text-gold); font-size: 24px;">試煉結果</h1>
-      <p id="end-desc" style="color: #94a3b8; font-size: 15px; text-align: center;"></p>
+      <h1 id="end-title" style="color: var(--text-gold); font-size: 22px;">試煉結果</h1>
+      <p id="end-desc" style="color: #94a3b8; font-size: 13px; text-align: center;"></p>
+      
+      <!-- 檢驗與評估數據面板 -->
+      <div class="heatmap-box" id="heatmap-panel">
+        <div style="color:var(--text-gold); font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
+        <div id="heatmap-content" style="color:#cbd5e1;">系統分析中...</div>
+      </div>
+
       <button class="btn" id="restart-btn">重新嘗試</button>
     </div>
   </div>
@@ -284,10 +349,10 @@
     ];
 
     const levelKeyPool = {
-      1: "ASDFGHJKL;",                   // Stage 1: 中排基準鍵
-      2: "QWERTYUIOP",                    // Stage 2: 上排字母
-      3: "ZXCVBNM",                       // Stage 3: 下排字母
-      4: "ABCDEFGHIJKLMNOPQRSTUVWXYZ;"    // Stage 4: 終極全字母試煉
+      1: ["A","S","D","F","G","H","J","K","L",";"],
+      2: ["Q","W","E","R","T","Y","U","I","O","P"],
+      3: ["FIRE", "DRAGON", "SPELL", "MAGIC", "POWER"],
+      4: ["LIGHTNING", "EXPLOSION", "ULTIMATE", "BLIZZARD", "PHOENIX"]
     };
 
     function initKeyboard() {
@@ -316,9 +381,15 @@
     }
 
     let hp = 100, score = 0, combo = 0, level = 1, isPlaying = false;
+    let bossHp = 100, maxBossHp = 100;
     let enemies = [];
     let waterSpells = [];
+    let activeTarget = null;
     let gameInterval = null, spawnInterval = null;
+
+    // 即時評測數據變數
+    let totalKeystrokes = 0, correctKeystrokes = 0, startTime = null;
+    let errorHeatmap = {}; // 錯字熱點紀錄
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -378,13 +449,17 @@
     function startGame() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
+      totalKeystrokes = 0; correctKeystrokes = 0; errorHeatmap = {};
+      startTime = Date.now();
+      activeTarget = null;
       clearCanvasElements();
 
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('level-up-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
-      updateHUD();
+      document.getElementById('boss-container').style.display = 'none';
 
+      updateHUD();
       resetSpawning();
       if (gameInterval) clearInterval(gameInterval);
       gameInterval = setInterval(updateGame, 30);
@@ -395,6 +470,7 @@
       waterSpells.forEach(s => s.el.remove());
       enemies = [];
       waterSpells = [];
+      activeTarget = null;
     }
 
     function resetSpawning() {
@@ -403,28 +479,49 @@
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
+    function setupBossStage() {
+      const bossUI = document.getElementById('boss-container');
+      bossUI.style.display = 'flex';
+      maxBossHp = level === 3 ? 100 : 200;
+      bossHp = maxBossHp;
+      updateBossHPBar();
+    }
+
+    function updateBossHPBar() {
+      const fill = document.getElementById('boss-hp-fill');
+      const pct = Math.max(0, (bossHp / maxBossHp) * 100);
+      fill.style.width = pct + '%';
+    }
+
     function spawnEnemy() {
       if (!isPlaying) return;
       const maxEnemies = Math.min(level + 1, 3);
       if (enemies.length >= maxEnemies) return;
 
-      const chars = levelKeyPool[level];
-      const char = chars[Math.floor(Math.random() * chars.length)];
+      const pool = levelKeyPool[level];
+      const word = pool[Math.floor(Math.random() * pool.length)];
       const canvas = document.getElementById('game-canvas');
-      const x = Math.floor(Math.random() * (canvas.clientWidth - 60)) + 10;
+      const x = Math.floor(Math.random() * (canvas.clientWidth - 90)) + 10;
 
       const el = document.createElement('div');
       el.className = 'fireball-container';
       el.innerHTML = `
         <div class="fire-tail"></div>
-        <div class="fireball-head">${char}</div>
+        <div class="fireball-head">${word}</div>
       `;
       el.style.left = x + 'px';
       el.style.top = '0px';
       canvas.appendChild(el);
 
       playFireSwoosh();
-      enemies.push({ char, x, y: 0, speed: 0.75 + (level * 0.2), el });
+      enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.7 + (level * 0.18), el });
+    }
+
+    function renderWordProgress(enemy) {
+      const headEl = enemy.el.querySelector('.fireball-head');
+      const typed = enemy.word.substring(0, enemy.typedIndex);
+      const remaining = enemy.word.substring(enemy.typedIndex);
+      headEl.innerHTML = `<span class="typed-char">${typed}</span>${remaining}`;
     }
 
     function shootWaterOrb(targetX, targetY, targetEnemy) {
@@ -434,7 +531,7 @@
       const staffX = canvas.clientWidth / 2;
       const staffY = canvas.clientHeight - 30;
 
-      const angleRad = Math.atan2(targetY - staffY, (targetX + 25) - staffX);
+      const angleRad = Math.atan2(targetY - staffY, (targetX + 30) - staffX);
       const angleDeg = (angleRad * 180 / Math.PI) + 90;
       staffContainer.style.transform = `rotate(${angleDeg}deg)`;
 
@@ -473,6 +570,7 @@
       document.getElementById('level-up-screen').style.display = 'flex';
 
       level = nextLvl;
+      if (level >= 3) setupBossStage();
       updateHUD();
     }
 
@@ -495,8 +593,9 @@
         if (e.y >= canvasHeight - 65) {
           hp -= 10;
           combo = 0;
+          if (activeTarget === e) activeTarget = null;
           playSteamExplosion();
-          createExplosion(e.x + 25, canvasHeight - 20);
+          createExplosion(e.x + 30, canvasHeight - 20);
           e.el.remove();
           enemies.splice(i, 1);
           updateHUD();
@@ -515,7 +614,7 @@
           continue;
         }
 
-        const targetX = target.x + 25;
+        const targetX = target.x + 30;
         const targetY = target.y + 40;
         const dx = targetX - s.x;
         const dy = targetY - s.y;
@@ -530,22 +629,30 @@
 
           const eIdx = enemies.indexOf(target);
           if (eIdx !== -1) {
+            if (activeTarget === target) activeTarget = null;
             target.el.remove();
             enemies.splice(eIdx, 1);
             combo++;
-            score += 10 + combo * 2;
+            score += 15 + combo * 3;
+
+            // 如果在 BOSS 戰，擊中扣除 BOSS 血量
+            if (level >= 3) {
+              bossHp -= 25;
+              updateBossHPBar();
+            }
+
             updateHUD();
 
             if (score >= 300 && level === 1) {
               triggerLevelUp(2, "📜【初階元素使】", "你已徹底熟練 Home Row 中排基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
             } else if (score >= 700 && level === 2) {
-              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
+              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 BOSS 戰役（透過擊退魔物扣除 BOSS 血量）！");
               return;
-            } else if (score >= 1200 && level === 3) {
-              triggerLevelUp(4, "🔮【高階魔法使】", "太出色了！三排指法皆已過關，準備迎接 Stage 4 全字母隨機終極試煉（目標 2000 分）！");
+            } else if (bossHp <= 0 && level === 3) {
+              triggerLevelUp(4, "🔮【高階魔法使】", "成功擊退初階 BOSS！準備迎接 Stage 4 終極魔王與進階咒語試煉！");
               return;
-            } else if (score >= 2000 && level === 4) {
+            } else if (bossHp <= 0 && level === 4) {
               gameOver(true);
               return;
             }
@@ -562,8 +669,15 @@
     function updateHUD() {
       document.getElementById('hp-val').innerText = hp;
       document.getElementById('score-val').innerText = score;
-      document.getElementById('combo-val').innerText = combo + 'x';
       document.getElementById('level-val').innerText = level + '/4';
+
+      // 動態計算 WPM 與 準確率 ACC
+      const elapsedTimeInMin = (Date.now() - startTime) / 60000;
+      const wpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
+      const acc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
+
+      document.getElementById('wpm-val').innerText = wpm;
+      document.getElementById('acc-val').innerText = acc + '%';
     }
 
     function gameOver(win) {
@@ -573,34 +687,50 @@
       clearCanvasElements();
 
       const screen = document.getElementById('gameover-screen');
+      const elapsedTimeInMin = (Date.now() - startTime) / 60000;
+      const finalWpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
+      const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
 
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          完美突破四大關卡！<br>
-          獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 22px;">👑 【大賢者】</b><br><br>
-          最終得分：${score} 分 | 最高連擊：${combo}x
+          成功擊敗終極魔王！<br>
+          獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 20px;">👑 【大賢者】</b><br>
         `;
       } else {
         let failRank = "🌱 見習學徒";
-        if (score >= 1200) failRank = "🔮 高階魔法使";
-        else if (score >= 700) failRank = "⚔️ 大符文導師";
+        if (level === 4) failRank = "🔮 高階魔法使";
+        else if (level === 3) failRank = "⚔️ 大符文導師";
         else if (score >= 300) failRank = "📜 初階元素使";
 
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
-          生命值歸零！<br>
-          當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br><br>
-          最終得分：${score} 分 | 最高連擊：${combo}x<br>
-          <span style="color:#ef4444; font-size:13px; margin-top:5px; display:inline-block;">未能通關，無法獲得「大賢者」稱號！</span>
+          當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br>
         `;
       }
+
+      // 產生熱點分析報告 (Error Heatmap)
+      let heatmapHtml = `<b>平均速度:</b> ${finalWpm} WPM | <b>準確率:</b> ${finalAcc}%<br>`;
+      const sortedErrors = Object.keys(errorHeatmap).sort((a,b) => errorHeatmap[b] - errorHeatmap[a]);
+
+      if (sortedErrors.length > 0) {
+        heatmapHtml += `<b>高頻易錯鍵熱點 (Heatmap):</b> `;
+        sortedErrors.slice(0, 4).forEach(k => {
+          heatmapHtml += `<span class="heatmap-tag">${k} (${errorHeatmap[k]}次)</span>`;
+        });
+        heatmapHtml += `<br><span style="color:#94a3b8; font-size:11px;">建議針對上述易錯按鍵進行自適應強化練習。</span>`;
+      } else {
+        heatmapHtml += `<span style="color:#22c55e;">完美表現！未出現明顯易錯按鍵。</span>`;
+      }
+
+      document.getElementById('heatmap-content').innerHTML = heatmapHtml;
       screen.style.display = 'flex';
     }
 
     function handleKeyPress(k) {
       if (!isPlaying) return;
       
+      totalKeystrokes++;
       const elementId = k === ';' ? 'key-semicolon' : `key-${k}`;
       const keyEl = document.getElementById(elementId);
       if (keyEl) {
@@ -608,13 +738,45 @@
         setTimeout(() => keyEl.classList.remove('active'), 120);
       }
 
-      const targetEnemy = enemies.find(e => e.char === k);
-      if (targetEnemy) {
-        shootWaterOrb(targetEnemy.x, targetEnemy.y, targetEnemy);
-      } else {
-        combo = 0;
+      // 如果有鎖定單字
+      if (activeTarget && enemies.includes(activeTarget)) {
+        const expectedChar = activeTarget.word[activeTarget.typedIndex];
+        if (k === expectedChar) {
+          correctKeystrokes++;
+          activeTarget.typedIndex++;
+          renderWordProgress(activeTarget);
+
+          if (activeTarget.typedIndex >= activeTarget.word.length) {
+            shootWaterOrb(activeTarget.x, activeTarget.y, activeTarget);
+            activeTarget = null;
+          }
+        } else {
+          // 紀錄錯字熱點
+          errorHeatmap[expectedChar] = (errorHeatmap[expectedChar] || 0) + 1;
+          combo = 0;
+        }
         updateHUD();
+        return;
       }
+
+      // 尋找符合按鍵的火球
+      const targetEnemy = enemies.find(e => e.word[e.typedIndex] === k);
+      if (targetEnemy) {
+        correctKeystrokes++;
+        targetEnemy.typedIndex++;
+        renderWordProgress(targetEnemy);
+
+        if (targetEnemy.typedIndex >= targetEnemy.word.length) {
+          shootWaterOrb(targetEnemy.x, targetEnemy.y, targetEnemy);
+        } else {
+          activeTarget = targetEnemy;
+        }
+      } else {
+        // 紀錄錯字熱點
+        errorHeatmap[k] = (errorHeatmap[k] || 0) + 1;
+        combo = 0;
+      }
+      updateHUD();
     }
 
     window.addEventListener('keydown', (e) => {
