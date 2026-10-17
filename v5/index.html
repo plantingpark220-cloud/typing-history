@@ -316,7 +316,7 @@
 
     <div id="level-up-screen" class="overlay" style="display: none;">
       <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
-      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text">恭喜獲得稱號：📜 【初階元素使】</p>
+      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text">恭喜獲得稱號：🌱 【初級魔導士】</p>
       <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
@@ -343,7 +343,6 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
-    // 擴充的高頻魔法英文單字庫
     const levelKeyPool = {
       1: ["A","S","D","F","G","H","J","K","L",";"],
       2: ["Q","W","E","R","T","Y","U","I","O","P"],
@@ -382,7 +381,7 @@
     let enemies = [];
     let waterSpells = [];
     let activeTarget = null;
-    let lastSpawnedWord = ""; // 紀錄上一顆單字，避免重複
+    let lastSpawnedWord = "";
     let gameInterval = null, spawnInterval = null;
 
     let totalKeystrokes = 0, correctKeystrokes = 0, startTime = null;
@@ -499,7 +498,6 @@
       const pool = levelKeyPool[level];
       let word = pool[Math.floor(Math.random() * pool.length)];
 
-      // 防重複機制：防止連續生成兩個相同的單字/字母
       if (pool.length > 1) {
         while (word === lastSpawnedWord) {
           word = pool[Math.floor(Math.random() * pool.length)];
@@ -566,13 +564,24 @@
       setTimeout(() => exp.remove(), 300);
     }
 
+    // 計算精準的「七大位階稱號」
+    function calculateTitle(curLevel, curScore, win = false) {
+      if (win && curLevel === 5) return "👑 【神級】 (大賢者)";
+      if (curScore >= 1800 || curLevel === 5) return "⚡ 【帝級】 魔法使";
+      if (curScore >= 1300 || curLevel === 4) return "🔥 【王級】 魔法使";
+      if (curScore >= 900) return "🔮 【聖級】 導師";
+      if (curScore >= 600 || curLevel === 3) return "⚔️ 【上級】 魔導士";
+      if (curScore >= 350 || curLevel === 2) return "📜 【中級】 詠唱者";
+      return "🌱 【初級】 見習生";
+    }
+
     function triggerLevelUp(nextLvl, rankName, desc) {
       isPlaying = false;
       clearInterval(gameInterval);
       clearInterval(spawnInterval);
       clearCanvasElements();
 
-      document.getElementById('rank-title-text').innerText = `恭喜獲得稱號：${rankName}`;
+      document.getElementById('rank-title-text').innerText = `恭喜位階晉升：${rankName}`;
       document.getElementById('level-up-desc').innerText = desc;
       document.getElementById('level-up-screen').style.display = 'flex';
 
@@ -651,17 +660,18 @@
 
             updateHUD();
 
+            // 七階評定過場
             if (levelHits >= 12 && level === 1) {
-              triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
+              triggerLevelUp(2, "📜 【中級】 詠唱者", "成功掌握 Home Row 基準鍵！準備晉升 Stage 2 挑戰上排字母！");
               return;
             } else if (levelHits >= 12 && level === 2) {
-              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
+              triggerLevelUp(3, "⚔️ 【上級】 魔導士", "上排指法掌控完美！準備晉升 Stage 3 挑戰下排字母（ZXCVBNM）！");
               return;
             } else if (levelHits >= 12 && level === 3) {
-              triggerLevelUp(4, "🔮【高階魔法使】", "三排指法基礎完全扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
+              triggerLevelUp(4, "🔮 【聖級】 導師", "全字母基礎扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
               return;
             } else if (bossHp <= 0 && level === 4) {
-              triggerLevelUp(5, "👑【大導師】", "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
+              triggerLevelUp(5, "🔥 【王級】 魔法使", "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
               return;
             } else if (bossHp <= 0 && level === 5) {
               gameOver(true);
@@ -701,23 +711,19 @@
       const finalWpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
       const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
 
+      const finalRankTitle = calculateTitle(level, score, win);
+
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          完美擊敗終極魔龍！<br>
-          獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 20px;">👑 【大賢者】</b><br>
+          完美討伐魔龍！<br>
+          最終評定位階：<b style="color:var(--text-gold); font-size: 20px;">${finalRankTitle}</b><br>
         `;
       } else {
-        let failRank = "🌱 見習學徒";
-        if (level === 5) failRank = "👑 大導師";
-        else if (level === 4) failRank = "🔮 高階魔法使";
-        else if (level === 3) failRank = "⚔️ 大符文導師";
-        else if (level === 2) failRank = "📜 初階元素使";
-
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
-          當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br>
-          <span style="color:#ef4444; font-size:12px;">未能成功通關第 5 關，無法獲得「大賢者」稱號。</span>
+          當前達成位階：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
+          <span style="color:#ef4444; font-size:12px;">生命值歸零，請再接再厲提高指法熟練度！</span>
         `;
       }
 
