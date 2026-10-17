@@ -6,19 +6,17 @@
   <title>SpellCraft Typing 鍵盤魔導士</title>
   <style>
     :root {
-      --bg-color: #0f0d13;
-      --panel-bg: rgba(26, 20, 16, 0.92);
-      --border-gold: #d4af37;
-      --border-dark-gold: #8a6d20;
-      --wood-dark: #1c130d;
-      --accent-blue: #38bdf8;
+      --bg-color: #0b090a;
+      --panel-bg: rgba(20, 15, 12, 0.88);
+      --border-gold: #c9a050;
+      --border-dark-gold: #785a22;
       --text-gold: #fde047;
       --text-main: #f3f4f6;
       --danger: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
     body {
-      font-family: 'Georgia', 'Times New Roman', serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-color);
       color: var(--text-main);
       min-height: 100vh;
@@ -26,7 +24,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background-image: radial-gradient(circle at 50% 30%, #2a1f1d 0%, #080608 85%);
+      /* 全局背景：深色奇幻城堡夜景微光 */
+      background-image: radial-gradient(circle at 50% 30%, #1a1528 0%, #050406 85%);
       padding: 10px;
     }
     header {
@@ -36,25 +35,27 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(180deg, #2c1e16, #1a120c);
+      background: linear-gradient(180deg, #2a1f18, #140d0a);
       border: 2px solid var(--border-gold);
       border-radius: 12px 12px 0 0;
-      box-shadow: 0 4px 25px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
     }
-    .title { font-size: 17px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 8px rgba(212,175,55,0.6); letter-spacing: 1px; }
-    .hud { display: flex; gap: 12px; font-size: 14px; }
-    .hud-val { color: var(--accent-blue); font-weight: bold; font-family: monospace; }
+    .title { font-size: 16px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 8px rgba(201,160,80,0.6); }
+    .hud { display: flex; gap: 12px; font-size: 13px; }
+    .hud-val { color: #38bdf8; font-weight: bold; font-family: monospace; }
     
     #game-canvas {
       width: 100%;
       max-width: 900px;
       height: 360px;
-      background: rgba(12, 10, 16, 0.9);
+      /* 遊戲背景：帶有中世紀歐式奇幻與羊皮紙調性的背景風格 */
+      background: linear-gradient(rgba(15, 12, 20, 0.75), rgba(10, 8, 14, 0.85)), 
+                  radial-gradient(ellipse at bottom, #3b281c 0%, #0d0a12 100%);
       border-left: 2px solid var(--border-gold);
       border-right: 2px solid var(--border-gold);
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.95);
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
     }
 
     #boss-container {
@@ -68,14 +69,18 @@
       gap: 4px;
       z-index: 6;
     }
-    .boss-sprite { font-size: 50px; filter: drop-shadow(0 0 16px #a855f7); animation: bossFloat 2.5s infinite alternate ease-in-out; }
-    .boss-bar-bg { width: 240px; height: 16px; background: rgba(0,0,0,0.8); border: 2px solid var(--border-gold); border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
-    .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #a855f7, #ef4444); transition: width 0.2s; }
-    .boss-name { font-size: 14px; color: #c084fc; font-weight: bold; text-shadow: 0 0 6px #000; letter-spacing: 2px; }
+    .boss-sprite { font-size: 48px; filter: drop-shadow(0 0 12px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
+    .boss-sprite.abyssal { filter: drop-shadow(0 0 18px #a855f7); }
+    
+    .boss-bar-bg { width: 230px; height: 15px; background: rgba(0,0,0,0.8); border: 2px solid var(--border-gold); border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.9); }
+    .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width 0.2s; }
+    .boss-bar-fill.abyssal-fill { background: linear-gradient(90deg, #a855f7, #ef4444); }
+    
+    .boss-name { font-size: 13px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 6px #000; letter-spacing: 1.5px; }
 
     @keyframes bossFloat {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(10px) scale(1.05); }
+      from { transform: translateY(0); }
+      to { transform: translateY(8px); }
     }
 
     #mage-staff-container {
@@ -104,7 +109,7 @@
     .staff-head {
       width: 40px;
       height: 35px;
-      border: 3px solid #78350f;
+      border: 3px solid #334155;
       border-bottom: none;
       border-radius: 20px 20px 0 0;
       position: absolute;
@@ -115,7 +120,7 @@
     .staff-handle {
       width: 6px;
       height: 65px;
-      background: linear-gradient(to bottom, #451a03, #1c0d02);
+      background: linear-gradient(to bottom, #1e293b, #0f172a);
       position: absolute;
       top: 35px;
       left: 27px;
@@ -200,13 +205,14 @@
       100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
     }
 
+    /* 中世紀黑鐵與古木質感鍵盤 */
     .keyboard {
       width: 100%;
       max-width: 900px;
-      background: linear-gradient(180deg, #1c130d, #2c1e16);
+      background: linear-gradient(180deg, #1f1712, #120d0a);
       border: 2px solid var(--border-gold);
       border-radius: 0 0 12px 12px;
-      padding: 12px 6px;
+      padding: 10px 5px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -217,7 +223,7 @@
       flex: 1;
       max-width: 45px;
       height: 45px;
-      background: linear-gradient(145deg, #2d241e, #1a1410);
+      background: linear-gradient(145deg, #2b211a, #18120e);
       border: 1px solid var(--border-dark-gold);
       border-radius: 6px;
       display: flex;
@@ -228,7 +234,7 @@
       color: #d1d5db;
       transition: all 0.1s ease;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
     }
     .key.active {
       background: var(--border-gold);
@@ -239,7 +245,7 @@
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 13, 19, 0.92);
+      background: rgba(13, 10, 16, 0.92);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -248,27 +254,27 @@
       z-index: 10;
     }
     .btn {
-      padding: 12px 36px;
-      background: linear-gradient(135deg, #d4af37, #8a6d20);
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #c9a050, #8e5225);
       border: 1px solid #fef08a;
       border-radius: 8px;
-      color: #1a0f07;
+      color: #fff;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 18px rgba(212,175,55,0.4);
+      box-shadow: 0 4px 15px rgba(201,160,80,0.4);
       transition: transform 0.2s;
     }
     .btn:active { transform: scale(0.95); }
 
     .heatmap-box {
-      background: rgba(28, 20, 16, 0.95);
+      background: rgba(15, 23, 42, 0.95);
       border: 1px solid var(--border-gold);
       border-radius: 8px;
       padding: 10px 15px;
       width: 85%;
       max-width: 400px;
-      font-size: 13px;
+      font-size: 12px;
       text-align: left;
     }
     .heatmap-tag {
@@ -286,7 +292,7 @@
 <body>
 
   <header>
-    <div class="title">⚔️ SpellCraft Typing</div>
+    <div class="title">✨ SpellCraft Typing</div>
     <div class="hud">
       <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
       <div>WPM: <span id="wpm-val" class="hud-val">0</span></div>
@@ -298,9 +304,9 @@
 
   <div id="game-canvas">
     <div id="boss-container">
-      <div class="boss-name">🐲 深淵魔龍 (BOSS)</div>
+      <div class="boss-name" id="boss-title-text">🐉 遠古魔龍 (BOSS)</div>
       <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
-      <div class="boss-sprite">🐲</div>
+      <div class="boss-sprite" id="boss-icon">🐉</div>
     </div>
 
     <div id="mage-staff-container">
@@ -310,8 +316,8 @@
     </div>
     
     <div id="start-screen" class="overlay">
-      <h1 style="color: var(--text-gold); font-size: 26px;">🏰 魔法學院鍵盤試煉</h1>
-      <p style="color: #cbd5e1; font-size: 14px; text-align: center; padding: 0 20px; line-height: 1.6;">
+      <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
+      <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
         揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
@@ -319,14 +325,14 @@
 
     <div id="level-up-screen" class="overlay" style="display: none;">
       <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
-      <p style="color: #fde047; font-size: 18px; margin-top: 5px;" id="rank-title-text"></p>
-      <p style="color: #cbd5e1; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
+      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text"></p>
+      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
 
     <div id="gameover-screen" class="overlay" style="display: none;">
-      <h1 id="end-title" style="color: var(--text-gold); font-size: 24px;">試煉結果</h1>
-      <p id="end-desc" style="color: #cbd5e1; font-size: 14px; text-align: center;"></p>
+      <h1 id="end-title" style="color: var(--text-gold); font-size: 22px;">試煉結果</h1>
+      <p id="end-desc" style="color: #94a3b8; font-size: 13px; text-align: center;"></p>
       
       <div class="heatmap-box" id="heatmap-panel">
         <div style="color:var(--text-gold); font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
@@ -480,11 +486,35 @@
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
+    // 第 5 關與第 6 關的 BOSS 兩階段進化設定
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
+      const bossTitle = document.getElementById('boss-title-text');
+      const bossIcon = document.getElementById('boss-icon');
+      const bossBarFill = document.getElementById('boss-hp-fill');
+
       bossUI.style.display = 'flex';
-      maxBossHp = 160;
-      bossHp = maxBossHp;
+
+      if (level === 5) {
+        // Stage 5：遠古魔龍 (120 HP)
+        maxBossHp = 120;
+        bossHp = maxBossHp;
+        bossTitle.innerText = "🐉 遠古魔龍 (BOSS)";
+        bossTitle.style.color = "#fca5a5";
+        bossIcon.innerText = "🐉";
+        bossIcon.classList.remove('abyssal');
+        bossBarFill.classList.remove('abyssal-fill');
+      } else if (level === 6) {
+        // Stage 6：狂暴進化為【深淵魔龍】(180 HP)
+        maxBossHp = 180;
+        bossHp = maxBossHp;
+        bossTitle.innerText = "🐲 深淵魔龍 (BOSS)";
+        bossTitle.style.color = "#c084fc";
+        bossIcon.innerText = "🐲";
+        bossIcon.classList.add('abyssal');
+        bossBarFill.classList.add('abyssal-fill');
+      }
+
       updateBossHPBar();
     }
 
@@ -572,8 +602,8 @@
 
     function getStageRankTitle(lvl, curScore) {
       let baseJob = "元素使";
-      if (lvl === 3 || lvl === 4 || lvl === 5) baseJob = "魔導士";
-      else if (lvl >= 6) baseJob = "大賢者";
+      if (lvl === 3 || lvl === 4) baseJob = "魔導士";
+      else if (lvl >= 5) baseJob = "大賢者";
 
       const currentAcc = totalKeystrokes > 0 ? (correctKeystrokes / totalKeystrokes) * 100 : 100;
 
@@ -601,7 +631,7 @@
       level = nextLvl;
       levelHits = 0;
       levelScore = 0;
-      if (level >= 6) setupBossStage();
+      if (level >= 5) setupBossStage();
       updateHUD();
     }
 
@@ -669,7 +699,7 @@
             score += earned;
             levelScore += earned;
 
-            if (level >= 6) {
+            if (level >= 5) {
               bossHp -= 20;
               updateBossHPBar();
             }
@@ -686,10 +716,10 @@
               triggerLevelUp(4, "三排單排指法全部上手！準備進入 Stage 4 全鍵盤 A~Z 三排混合盲打過渡訓練！");
               return;
             } else if (levelHits >= 15 && level === 4) {
-              triggerLevelUp(5, "全鍵盤盲打基礎扎實！準備進入 Stage 5 基礎常用單字詠唱（fire, water, spell 等）！");
+              triggerLevelUp(5, "全鍵盤盲打基礎扎實！準備進入 Stage 5 迎戰【遠古魔龍】（基礎常用單字詠唱）！");
               return;
-            } else if (levelHits >= 12 && level === 5) {
-              triggerLevelUp(6, "單字盲打基礎扎實！準備進入 Stage 6 ⚔️ 討伐【深淵魔龍】（高階單字與專有名詞組合咒語）！");
+            } else if (bossHp <= 0 && level === 5) {
+              triggerLevelUp(6, "遠古魔龍狂暴突破！升級為【深淵魔龍】！準備迎接 Stage 6 終極專有名詞組合咒語試煉！");
               return;
             } else if (bossHp <= 0 && level === 6) {
               gameOver(true);
