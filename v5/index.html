@@ -564,17 +564,19 @@
       setTimeout(() => exp.remove(), 300);
     }
 
-    // 計算每一關獨立的 5 階稱號（初級 -> 中級 -> 上級 -> 王級 -> 神級）
+    // 雙重嚴格門檻判定：單關得分 + 正確率 (Accuracy %)
     function getStageRankTitle(lvl, curScore) {
       let baseJob = "元素使";
       if (lvl === 3) baseJob = "魔導士";
       else if (lvl >= 4) baseJob = "大賢者";
 
+      const currentAcc = totalKeystrokes > 0 ? (correctKeystrokes / totalKeystrokes) * 100 : 100;
+
       let rankTier = "🌱 初級";
-      if (curScore >= 260) rankTier = "👑 神級";
-      else if (curScore >= 210) rankTier = "🔥 王級";
-      else if (curScore >= 160) rankTier = "⚔️ 上級";
-      else if (curScore >= 110) rankTier = "📜 中級";
+      if (curScore >= 280 && currentAcc >= 95) rankTier = "👑 神級";
+      else if (curScore >= 230 && currentAcc >= 88) rankTier = "🔥 王級";
+      else if (curScore >= 170 && currentAcc >= 80) rankTier = "⚔️ 上級";
+      else if (curScore >= 110 && currentAcc >= 70) rankTier = "📜 中級";
 
       return `${rankTier}${baseJob}`;
     }
@@ -593,7 +595,7 @@
 
       level = nextLvl;
       levelHits = 0;
-      levelScore = 0; // 重置下一關的單關得分
+      levelScore = 0;
       if (level >= 4) setupBossStage();
       updateHUD();
     }
@@ -696,7 +698,7 @@
     }
 
     function updateHUD() {
-      document.getElementById('hp-val').innerText = hp;
+      document.getElementById('hp-val').innerText = Math.max(0, hp);
       document.getElementById('score-val').innerText = score;
       document.getElementById('level-val').innerText = level + '/5';
 
@@ -731,7 +733,7 @@
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
           當前關卡評定：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
-          <span style="color:#ef4444; font-size:12px;">生命值歸零，請再接再厲提升打字準確率！</span>
+          <span style="color:#ef4444; font-size:12px;">錯字率偏高或生命值歸零，請提高指法準確率！</span>
         `;
       }
 
@@ -751,7 +753,6 @@
       screen.style.display = 'flex';
     }
 
-    // 重置目前正在打的單字/目標
     function cancelActiveTarget() {
       if (activeTarget) {
         activeTarget.typedIndex = 0;
@@ -786,8 +787,11 @@
             activeTarget = null;
           }
         } else {
+          // 扣分機制：按錯鍵除了中斷連擊，扣 10 分
           errorHeatmap[expectedChar] = (errorHeatmap[expectedChar] || 0) + 1;
           combo = 0;
+          score = Math.max(0, score - 10);
+          levelScore = Math.max(0, levelScore - 10);
         }
         updateHUD();
         return;
@@ -807,12 +811,13 @@
       } else {
         errorHeatmap[inputChar] = (errorHeatmap[inputChar] || 0) + 1;
         combo = 0;
+        score = Math.max(0, score - 10);
+        levelScore = Math.max(0, levelScore - 10);
       }
       updateHUD();
     }
 
     window.addEventListener('keydown', (e) => {
-      // 支援按 Delete 或 Backspace 放棄並切換目標
       if (e.key === 'Delete' || e.key === 'Backspace') {
         cancelActiveTarget();
         return;
