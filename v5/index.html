@@ -57,7 +57,7 @@
       box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
     }
 
-    /* BOSS 怪獸與血量條 */
+    /* 魔龍 BOSS 與血量條 */
     #boss-container {
       position: absolute;
       top: 10px;
@@ -69,10 +69,10 @@
       gap: 4px;
       z-index: 6;
     }
-    .boss-sprite { font-size: 38px; filter: drop-shadow(0 0 10px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
+    .boss-sprite { font-size: 42px; filter: drop-shadow(0 0 12px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
     .boss-bar-bg { width: 220px; height: 14px; background: rgba(0,0,0,0.7); border: 1.5px solid var(--border-gold); border-radius: 7px; overflow: hidden; }
     .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width 0.2s; }
-    .boss-name { font-size: 11px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 4px #000; }
+    .boss-name { font-size: 13px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 4px #000; letter-spacing: 1px; }
 
     @keyframes bossFloat {
       from { transform: translateY(0); }
@@ -146,24 +146,25 @@
       margin-bottom: -10px;
     }
     .fireball-head {
-      min-width: 48px;
+      min-width: 52px;
       height: 48px;
-      padding: 0 10px;
+      padding: 0 14px;
       background: radial-gradient(circle, #fff7ed 10%, #f97316 50%, #dc2626 90%);
       border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 900;
-      font-size: 18px;
+      font-weight: 800;
+      font-size: 20px;
       color: #0f172a;
       box-shadow: 0 0 15px #f97316, 0 0 30px #ef4444;
       border: 2px solid #ffedd5;
-      text-shadow: 0 0 5px #fff;
+      text-shadow: 0 0 3px #fff;
       z-index: 2;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      text-transform: lowercase; /* 改為清晰小寫顯示 */
     }
-    .typed-char { color: #22c55e; text-shadow: 0 0 5px #4ade80; }
+    .typed-char { color: #22c55e; text-shadow: 0 0 5px #4ade80; font-weight: 900; }
 
     @keyframes flameFlicker {
       0% { transform: scaleX(0.9) scaleY(1); opacity: 0.8; }
@@ -259,7 +260,6 @@
     }
     .btn:active { transform: scale(0.95); }
 
-    /* 熱點分析樣式 */
     .heatmap-box {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid var(--border-gold);
@@ -296,9 +296,9 @@
   </header>
 
   <div id="game-canvas">
-    <!-- BOSS 魔物血量區域 -->
+    <!-- 魔龍 BOSS 標示與血量條 -->
     <div id="boss-container">
-      <div class="boss-name">🔥 暗黑遠古炎魔 (STAGE 3 & 4 BOSS)</div>
+      <div class="boss-name">🐉 魔龍 (BOSS)</div>
       <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
       <div class="boss-sprite">🐉</div>
     </div>
@@ -312,7 +312,7 @@
     <div id="start-screen" class="overlay">
       <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
+        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（asdfghjkl;）</b>
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
@@ -324,12 +324,10 @@
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
 
-    <!-- 結算畫面與錯字熱點分析 -->
     <div id="gameover-screen" class="overlay" style="display: none;">
       <h1 id="end-title" style="color: var(--text-gold); font-size: 22px;">試煉結果</h1>
       <p id="end-desc" style="color: #94a3b8; font-size: 13px; text-align: center;"></p>
       
-      <!-- 檢驗與評估數據面板 -->
       <div class="heatmap-box" id="heatmap-panel">
         <div style="color:var(--text-gold); font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
         <div id="heatmap-content" style="color:#cbd5e1;">系統分析中...</div>
@@ -343,16 +341,17 @@
 
   <script>
     const keysLayout = [
-      ["Q","W","E","R","T","Y","U","I","O","P"],
-      ["A","S","D","F","G","H","J","K","L",";"],
-      ["Z","X","C","V","B","N","M"]
+      ["q","w","e","r","t","y","u","i","o","p"],
+      ["a","s","d","f","g","h","j","k","l",";"],
+      ["z","x","c","v","b","n","m"]
     ];
 
+    // 精簡短小的常用英文魔法單字（小寫）
     const levelKeyPool = {
-      1: ["A","S","D","F","G","H","J","K","L",";"],
-      2: ["Q","W","E","R","T","Y","U","I","O","P"],
-      3: ["FIRE", "DRAGON", "SPELL", "MAGIC", "POWER"],
-      4: ["LIGHTNING", "EXPLOSION", "ULTIMATE", "BLIZZARD", "PHOENIX"]
+      1: ["a","s","d","f","g","h","j","k","l",";"],
+      2: ["q","w","e","r","t","y","u","i","o","p"],
+      3: ["fire", "mage", "spell", "water", "heal"],
+      4: ["light", "dark", "cast", "power", "rune", "flame"]
     };
 
     function initKeyboard() {
@@ -387,9 +386,8 @@
     let activeTarget = null;
     let gameInterval = null, spawnInterval = null;
 
-    // 即時評測數據變數
     let totalKeystrokes = 0, correctKeystrokes = 0, startTime = null;
-    let errorHeatmap = {}; // 錯字熱點紀錄
+    let errorHeatmap = {};
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -475,14 +473,15 @@
 
     function resetSpawning() {
       if (spawnInterval) clearInterval(spawnInterval);
-      const spawnTime = Math.max(1200, 2200 - (level * 250));
+      // 放慢生成頻率，確保體驗舒適
+      const spawnTime = Math.max(1600, 2600 - (level * 200));
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
       bossUI.style.display = 'flex';
-      maxBossHp = level === 3 ? 100 : 200;
+      maxBossHp = level === 3 ? 80 : 120;
       bossHp = maxBossHp;
       updateBossHPBar();
     }
@@ -495,7 +494,7 @@
 
     function spawnEnemy() {
       if (!isPlaying) return;
-      const maxEnemies = Math.min(level + 1, 3);
+      const maxEnemies = 2; // 限制畫面上同時出現最多 2 個火球
       if (enemies.length >= maxEnemies) return;
 
       const pool = levelKeyPool[level];
@@ -514,7 +513,8 @@
       canvas.appendChild(el);
 
       playFireSwoosh();
-      enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.7 + (level * 0.18), el });
+      // 大幅放慢火球掉落速度（減速50%）
+      enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.45 + (level * 0.08), el });
     }
 
     function renderWordProgress(enemy) {
@@ -635,22 +635,21 @@
             combo++;
             score += 15 + combo * 3;
 
-            // 如果在 BOSS 戰，擊中扣除 BOSS 血量
             if (level >= 3) {
-              bossHp -= 25;
+              bossHp -= 20;
               updateBossHPBar();
             }
 
             updateHUD();
 
             if (score >= 300 && level === 1) {
-              triggerLevelUp(2, "📜【初階元素使】", "你已徹底熟練 Home Row 中排基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
+              triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（qwertyuiop）！");
               return;
             } else if (score >= 700 && level === 2) {
-              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 BOSS 戰役（透過擊退魔物扣除 BOSS 血量）！");
+              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 擊退魔龍（討伐魔龍 BOSS）！");
               return;
             } else if (bossHp <= 0 && level === 3) {
-              triggerLevelUp(4, "🔮【高階魔法使】", "成功擊退初階 BOSS！準備迎接 Stage 4 終極魔王與進階咒語試煉！");
+              triggerLevelUp(4, "🔮【高階魔法使】", "成功將魔龍擊退！準備迎接 Stage 4 終極魔龍與進階咒語試煉！");
               return;
             } else if (bossHp <= 0 && level === 4) {
               gameOver(true);
@@ -671,7 +670,6 @@
       document.getElementById('score-val').innerText = score;
       document.getElementById('level-val').innerText = level + '/4';
 
-      // 動態計算 WPM 與 準確率 ACC
       const elapsedTimeInMin = (Date.now() - startTime) / 60000;
       const wpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
       const acc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
@@ -694,7 +692,7 @@
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          成功擊敗終極魔王！<br>
+          成功討伐魔龍！<br>
           獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 20px;">👑 【大賢者】</b><br>
         `;
       } else {
@@ -709,7 +707,6 @@
         `;
       }
 
-      // 產生熱點分析報告 (Error Heatmap)
       let heatmapHtml = `<b>平均速度:</b> ${finalWpm} WPM | <b>準確率:</b> ${finalAcc}%<br>`;
       const sortedErrors = Object.keys(errorHeatmap).sort((a,b) => errorHeatmap[b] - errorHeatmap[a]);
 
@@ -718,7 +715,6 @@
         sortedErrors.slice(0, 4).forEach(k => {
           heatmapHtml += `<span class="heatmap-tag">${k} (${errorHeatmap[k]}次)</span>`;
         });
-        heatmapHtml += `<br><span style="color:#94a3b8; font-size:11px;">建議針對上述易錯按鍵進行自適應強化練習。</span>`;
       } else {
         heatmapHtml += `<span style="color:#22c55e;">完美表現！未出現明顯易錯按鍵。</span>`;
       }
@@ -730,18 +726,19 @@
     function handleKeyPress(k) {
       if (!isPlaying) return;
       
+      const charLower = k.toLowerCase();
       totalKeystrokes++;
-      const elementId = k === ';' ? 'key-semicolon' : `key-${k}`;
+      
+      const elementId = charLower === ';' ? 'key-semicolon' : `key-${charLower}`;
       const keyEl = document.getElementById(elementId);
       if (keyEl) {
         keyEl.classList.add('active');
         setTimeout(() => keyEl.classList.remove('active'), 120);
       }
 
-      // 如果有鎖定單字
       if (activeTarget && enemies.includes(activeTarget)) {
         const expectedChar = activeTarget.word[activeTarget.typedIndex];
-        if (k === expectedChar) {
+        if (charLower === expectedChar) {
           correctKeystrokes++;
           activeTarget.typedIndex++;
           renderWordProgress(activeTarget);
@@ -751,7 +748,6 @@
             activeTarget = null;
           }
         } else {
-          // 紀錄錯字熱點
           errorHeatmap[expectedChar] = (errorHeatmap[expectedChar] || 0) + 1;
           combo = 0;
         }
@@ -759,8 +755,7 @@
         return;
       }
 
-      // 尋找符合按鍵的火球
-      const targetEnemy = enemies.find(e => e.word[e.typedIndex] === k);
+      const targetEnemy = enemies.find(e => e.word[e.typedIndex] === charLower);
       if (targetEnemy) {
         correctKeystrokes++;
         targetEnemy.typedIndex++;
@@ -772,15 +767,14 @@
           activeTarget = targetEnemy;
         }
       } else {
-        // 紀錄錯字熱點
-        errorHeatmap[k] = (errorHeatmap[k] || 0) + 1;
+        errorHeatmap[charLower] = (errorHeatmap[charLower] || 0) + 1;
         combo = 0;
       }
       updateHUD();
     }
 
     window.addEventListener('keydown', (e) => {
-      let key = e.key.toUpperCase();
+      let key = e.key.toLowerCase();
       if (e.key === ';') key = ';';
       handleKeyPress(key);
     });
