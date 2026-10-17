@@ -289,7 +289,7 @@
       <div>WPM: <span id="wpm-val" class="hud-val">0</span></div>
       <div>ACC: <span id="acc-val" class="hud-val">100%</span></div>
       <div>分: <span id="score-val" class="hud-val">0</span></div>
-      <div>關: <span id="level-val" class="hud-val">1/4</span></div>
+      <div>關: <span id="level-val" class="hud-val">1/5</span></div>
     </div>
   </header>
 
@@ -343,11 +343,13 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
+    // 擴充的高頻魔法英文單字庫
     const levelKeyPool = {
       1: ["A","S","D","F","G","H","J","K","L",";"],
       2: ["Q","W","E","R","T","Y","U","I","O","P"],
-      3: ["fire", "mage", "spell", "water", "heal"],
-      4: ["light", "dark", "cast", "power", "rune", "flame"]
+      3: ["Z","X","C","V","B","N","M"],
+      4: ["fire", "mage", "spell", "water", "heal", "shield", "mana", "storm", "spark", "frost", "potion", "sword"],
+      5: ["light", "dark", "cast", "power", "rune", "flame", "dragon", "curse", "spirit", "shadow", "meteor", "blizz"]
     };
 
     function initKeyboard() {
@@ -380,6 +382,7 @@
     let enemies = [];
     let waterSpells = [];
     let activeTarget = null;
+    let lastSpawnedWord = ""; // 紀錄上一顆單字，避免重複
     let gameInterval = null, spawnInterval = null;
 
     let totalKeystrokes = 0, correctKeystrokes = 0, startTime = null;
@@ -446,6 +449,7 @@
       totalKeystrokes = 0; correctKeystrokes = 0; errorHeatmap = {};
       startTime = Date.now();
       activeTarget = null;
+      lastSpawnedWord = "";
       clearCanvasElements();
 
       document.getElementById('start-screen').style.display = 'none';
@@ -476,7 +480,7 @@
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
       bossUI.style.display = 'flex';
-      maxBossHp = level === 3 ? 80 : 120;
+      maxBossHp = level === 4 ? 100 : 160;
       bossHp = maxBossHp;
       updateBossHPBar();
     }
@@ -493,9 +497,18 @@
       if (enemies.length >= maxEnemies) return;
 
       const pool = levelKeyPool[level];
-      const word = pool[Math.floor(Math.random() * pool.length)];
+      let word = pool[Math.floor(Math.random() * pool.length)];
+
+      // 防重複機制：防止連續生成兩個相同的單字/字母
+      if (pool.length > 1) {
+        while (word === lastSpawnedWord) {
+          word = pool[Math.floor(Math.random() * pool.length)];
+        }
+      }
+      lastSpawnedWord = word;
+
       const canvas = document.getElementById('game-canvas');
-      const x = Math.floor(Math.random() * (canvas.clientWidth - 90)) + 10;
+      const x = Math.floor(Math.random() * (canvas.clientWidth - 100)) + 10;
 
       const el = document.createElement('div');
       el.className = 'fireball-container';
@@ -564,8 +577,8 @@
       document.getElementById('level-up-screen').style.display = 'flex';
 
       level = nextLvl;
-      levelHits = 0; // 重置該關卡擊擊次數
-      if (level >= 3) setupBossStage();
+      levelHits = 0;
+      if (level >= 4) setupBossStage();
       updateHUD();
     }
 
@@ -628,27 +641,29 @@
             target.el.remove();
             enemies.splice(eIdx, 1);
             combo++;
-            levelHits++; // 紀錄該關卡成功擊破次數
+            levelHits++;
             score += 15 + combo * 3;
 
-            if (level >= 3) {
+            if (level >= 4) {
               bossHp -= 20;
               updateBossHPBar();
             }
 
             updateHUD();
 
-            // 獨立的關卡突破條件（第一關需打對 15 個字母，第二關 15 個）
-            if (levelHits >= 15 && level === 1) {
+            if (levelHits >= 12 && level === 1) {
               triggerLevelUp(2, "📜【初階元素使】", "你已熟練 Home Row 基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
-            } else if (levelHits >= 15 && level === 2) {
-              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 擊退魔龍（討伐魔龍 BOSS）！");
+            } else if (levelHits >= 12 && level === 2) {
+              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
               return;
-            } else if (bossHp <= 0 && level === 3) {
-              triggerLevelUp(4, "🔮【高階魔法使】", "成功將魔龍擊退！準備迎接 Stage 4 終極魔龍與進階咒語試煉！");
+            } else if (levelHits >= 12 && level === 3) {
+              triggerLevelUp(4, "🔮【高階魔法使】", "三排指法基礎完全扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
               return;
             } else if (bossHp <= 0 && level === 4) {
+              triggerLevelUp(5, "👑【大導師】", "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
+              return;
+            } else if (bossHp <= 0 && level === 5) {
               gameOver(true);
               return;
             }
@@ -665,7 +680,7 @@
     function updateHUD() {
       document.getElementById('hp-val').innerText = hp;
       document.getElementById('score-val').innerText = score;
-      document.getElementById('level-val').innerText = level + '/4';
+      document.getElementById('level-val').innerText = level + '/5';
 
       const elapsedTimeInMin = (Date.now() - startTime) / 60000;
       const wpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
@@ -686,23 +701,23 @@
       const finalWpm = elapsedTimeInMin > 0 ? Math.round((correctKeystrokes / 5) / elapsedTimeInMin) : 0;
       const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
 
-      // 精準稱號配發邏輯
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          完美擊敗魔龍！<br>
+          完美擊敗終極魔龍！<br>
           獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 20px;">👑 【大賢者】</b><br>
         `;
       } else {
         let failRank = "🌱 見習學徒";
-        if (level === 4) failRank = "🔮 高階魔法使";
+        if (level === 5) failRank = "👑 大導師";
+        else if (level === 4) failRank = "🔮 高階魔法使";
         else if (level === 3) failRank = "⚔️ 大符文導師";
         else if (level === 2) failRank = "📜 初階元素使";
 
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
           當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br>
-          <span style="color:#ef4444; font-size:12px;">未能成功通關第 4 關，無法獲得「大賢者」稱號。</span>
+          <span style="color:#ef4444; font-size:12px;">未能成功通關第 5 關，無法獲得「大賢者」稱號。</span>
         `;
       }
 
@@ -725,7 +740,7 @@
     function handleKeyPress(k) {
       if (!isPlaying) return;
       
-      const inputChar = (level <= 2) ? k.toUpperCase() : k.toLowerCase();
+      const inputChar = (level <= 3) ? k.toUpperCase() : k.toLowerCase();
       totalKeystrokes++;
       
       const keyIdChar = inputChar.toUpperCase();
