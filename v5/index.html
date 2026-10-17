@@ -147,20 +147,21 @@
     .fireball-head {
       min-width: 52px;
       height: 48px;
-      padding: 0 14px;
+      padding: 0 16px;
       background: radial-gradient(circle, #fff7ed 10%, #f97316 50%, #dc2626 90%);
       border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 20px;
+      font-size: 18px;
       color: #0f172a;
       box-shadow: 0 0 15px #f97316, 0 0 30px #ef4444;
       border: 2px solid #ffedd5;
       text-shadow: 0 0 3px #fff;
       z-index: 2;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
+      white-space: nowrap;
     }
     .typed-char { color: #22c55e; text-shadow: 0 0 5px #4ade80; font-weight: 900; }
 
@@ -343,12 +344,13 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
+    // 升級的高階專有名詞與魔法組合咒語
     const levelKeyPool = {
       1: ["A","S","D","F","G","H","J","K","L",";"],
       2: ["Q","W","E","R","T","Y","U","I","O","P"],
       3: ["Z","X","C","V","B","N","M"],
-      4: ["fire", "mage", "spell", "water", "heal", "shield", "mana", "storm", "spark", "frost", "potion", "sword"],
-      5: ["light", "dark", "cast", "power", "rune", "flame", "dragon", "curse", "spirit", "shadow", "meteor", "blizz"]
+      4: ["blizzard", "lightning", "explosion", "avalanche", "sanctuary", "meteorite", "hurricane", "elemental"],
+      5: ["cumulonimbus", "water splash", "icicle edge", "flood flash", "icicle field", "ice smash", "absolute zero", "frost breath"]
     };
 
     function initKeyboard() {
@@ -479,7 +481,7 @@
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
       bossUI.style.display = 'flex';
-      maxBossHp = level === 4 ? 100 : 160;
+      maxBossHp = level === 4 ? 120 : 180;
       bossHp = maxBossHp;
       updateBossHPBar();
     }
@@ -506,7 +508,7 @@
       lastSpawnedWord = word;
 
       const canvas = document.getElementById('game-canvas');
-      const x = Math.floor(Math.random() * (canvas.clientWidth - 100)) + 10;
+      const x = Math.floor(Math.random() * (canvas.clientWidth - 160)) + 10;
 
       const el = document.createElement('div');
       el.className = 'fireball-container';
@@ -519,14 +521,17 @@
       canvas.appendChild(el);
 
       playFireSwoosh();
-      enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.45 + (level * 0.08), el });
+      enemies.push({ word, typedIndex: 0, x, y: 0, speed: 0.4 + (level * 0.06), el });
     }
 
     function renderWordProgress(enemy) {
       const headEl = enemy.el.querySelector('.fireball-head');
       const typed = enemy.word.substring(0, enemy.typedIndex);
       const remaining = enemy.word.substring(enemy.typedIndex);
-      headEl.innerHTML = `<span class="typed-char">${typed}</span>${remaining}`;
+      // 空白字元特別可視化
+      const displayTyped = typed.replace(/ /g, '␣');
+      const displayRemaining = remaining.replace(/ /g, '␣');
+      headEl.innerHTML = `<span class="typed-char">${displayTyped}</span>${displayRemaining}`;
     }
 
     function shootWaterOrb(targetX, targetY, targetEnemy) {
@@ -564,7 +569,6 @@
       setTimeout(() => exp.remove(), 300);
     }
 
-    // 雙重嚴格門檻判定：單關得分 + 正確率 (Accuracy %)
     function getStageRankTitle(lvl, curScore) {
       let baseJob = "元素使";
       if (lvl === 3) baseJob = "魔導士";
@@ -665,7 +669,7 @@
             levelScore += earned;
 
             if (level >= 4) {
-              bossHp -= 20;
+              bossHp -= 25;
               updateBossHPBar();
             }
 
@@ -678,10 +682,10 @@
               triggerLevelUp(3, "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
               return;
             } else if (levelHits >= 12 && level === 3) {
-              triggerLevelUp(4, "三排指法基礎完全扎實！準備進入 Stage 4 魔龍討伐戰（單字詠唱）！");
+              triggerLevelUp(4, "三排指法基礎完全扎實！準備進入 Stage 4 魔龍討伐戰（高階專有名詞詠唱）！");
               return;
             } else if (bossHp <= 0 && level === 4) {
-              triggerLevelUp(5, "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍進階咒語試煉！");
+              triggerLevelUp(5, "成功將魔龍擊退！準備迎接 Stage 5 終極魔龍組合咒語試煉（Cumulonimbus, Icicle Edge 等）！");
               return;
             } else if (bossHp <= 0 && level === 5) {
               gameOver(true);
@@ -733,7 +737,7 @@
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
           當前關卡評定：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
-          <span style="color:#ef4444; font-size:12px;">錯字率偏高或生命值歸零，請提高指法準確率！</span>
+          <span style="color:#ef4444; font-size:12px;">高階咒語錯字率偏高，請提升盲打精準度！</span>
         `;
       }
 
@@ -787,7 +791,6 @@
             activeTarget = null;
           }
         } else {
-          // 扣分機制：按錯鍵除了中斷連擊，扣 10 分
           errorHeatmap[expectedChar] = (errorHeatmap[expectedChar] || 0) + 1;
           combo = 0;
           score = Math.max(0, score - 10);
@@ -824,6 +827,7 @@
       }
       let key = e.key;
       if (e.key === ';') key = ';';
+      else if (e.key === ' ') key = ' ';
       handleKeyPress(key);
     });
 
