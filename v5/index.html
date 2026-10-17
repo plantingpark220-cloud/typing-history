@@ -374,6 +374,7 @@
             <b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
           </p>
           <button class="btn" id="start-btn">開始詠唱試煉</button>
+          <span style="font-size: 11px; color: #78350f; opacity: 0.8;">[測試提示] 鍵盤按下 F8 鍵可直接跳關</span>
         </div>
       </div>
 
@@ -925,13 +926,17 @@
       }
     }
 
-    // ⚡ 秒殺跳關邏輯 (快捷鍵 Ctrl + Shift + L)
+    // ⚡ 絕對秒殺跳關功能 (按鍵 F8 或 ~ 鍵)
     function forcePassLevel() {
-      if (!isPlaying) return;
+      // 若在選單介面，直接開啟遊戲
+      if (!isPlaying) {
+        startGame();
+      }
+
       if (level < 5) {
-        levelHits = 99; // 觸發普通關卡通關
+        levelHits = 99;
       } else {
-        bossHp = 0; // 秒殺 BOSS
+        bossHp = 0;
       }
       updateGame();
     }
@@ -992,8 +997,8 @@
     }
 
     window.addEventListener('keydown', (e) => {
-      // 快捷鍵跳關測試：Ctrl + Shift + L
-      if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+      // 單一熱鍵：按 F8 鍵 或 ~ (Backquote) 鍵直接秒殺跳關！
+      if (e.key === 'F8' || e.key === '`' || e.key === '~') {
         e.preventDefault();
         forcePassLevel();
         return;
