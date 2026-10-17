@@ -46,24 +46,136 @@
     #game-canvas {
       width: 100%;
       max-width: 900px;
-      height: 340px;
-      background: rgba(10, 12, 24, 0.8);
+      height: 360px;
+      background: rgba(10, 12, 24, 0.85);
       border-left: 2px solid var(--border-gold);
       border-right: 2px solid var(--border-gold);
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
     }
-    /* 魔法杖視覺效果 */
-    #mage-staff {
+
+    /* 藍寶珠法杖樣式 */
+    #mage-staff-container {
       position: absolute;
-      bottom: 5px;
+      bottom: -10px;
       left: 50%;
-      transform: translateX(-50%);
-      font-size: 32px;
+      width: 60px;
+      height: 100px;
+      margin-left: -30px;
       z-index: 5;
-      filter: drop-shadow(0 0 10px var(--accent-blue));
+      transform-origin: bottom center;
+      transition: transform 0.15s ease-out;
+      pointer-events: none;
     }
+    .staff-orb {
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle, #e0f2fe 10%, #0284c7 60%, #0369a1 100%);
+      border-radius: 50%;
+      position: absolute;
+      top: 10px;
+      left: 18px;
+      box-shadow: 0 0 15px #38bdf8, 0 0 25px #0284c7;
+      animation: orbGlow 1.5s infinite alternate;
+    }
+    .staff-head {
+      width: 40px;
+      height: 35px;
+      border: 3px solid #334155;
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      position: absolute;
+      top: 5px;
+      left: 10px;
+      box-shadow: inset 0 0 5px #000;
+    }
+    .staff-handle {
+      width: 6px;
+      height: 65px;
+      background: linear-gradient(to bottom, #1e293b, #0f172a);
+      position: absolute;
+      top: 35px;
+      left: 27px;
+      border-radius: 3px;
+    }
+
+    @keyframes orbGlow {
+      from { box-shadow: 0 0 10px #38bdf8; }
+      to { box-shadow: 0 0 22px #38bdf8, 0 0 30px #60a5fa; }
+    }
+
+    /* 逼真帶尾焰火球 */
+    .fireball-container {
+      position: absolute;
+      width: 50px;
+      height: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .fire-tail {
+      width: 20px;
+      height: 30px;
+      background: linear-gradient(to top, rgba(249, 115, 22, 0.9), rgba(239, 68, 68, 0.6), transparent);
+      border-radius: 50% 50% 20% 20%;
+      filter: blur(2px);
+      animation: flameFlicker 0.2s infinite alternate;
+      margin-bottom: -10px;
+    }
+    .fireball-head {
+      width: 46px;
+      height: 46px;
+      background: radial-gradient(circle, #fff7ed 10%, #f97316 50%, #dc2626 90%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 22px;
+      color: #0f172a;
+      box-shadow: 0 0 15px #f97316, 0 0 30px #ef4444;
+      border: 2px solid #ffedd5;
+      text-shadow: 0 0 5px #fff;
+      z-index: 2;
+    }
+
+    @keyframes flameFlicker {
+      0% { transform: scaleX(0.9) scaleY(1); opacity: 0.8; }
+      100% { transform: scaleX(1.1) scaleY(1.2); opacity: 1; }
+    }
+
+    /* 水球魔法粒子 */
+    .water-orb {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle, #ffffff 20%, #38bdf8 60%, #0284c7 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 15px #38bdf8, 0 0 25px #0284c7;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* 爆炸效果 */
+    .explosion {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 0%, #38bdf8 40%, #f97316 70%, transparent 100%);
+      transform: translate(-50%, -50%) scale(0.2);
+      animation: explode 0.3s ease-out forwards;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    @keyframes explode {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      50% { opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+    }
+
     .keyboard {
       width: 100%;
       max-width: 900px;
@@ -123,36 +235,6 @@
       transition: transform 0.2s;
     }
     .btn:active { transform: scale(0.95); }
-    
-    /* 熾熱火球造型 */
-    .fireball {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      background: radial-gradient(circle, #fef08a 20%, #f97316 60%, #dc2626 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 22px;
-      color: #111;
-      box-shadow: 0 0 20px #f97316, 0 0 35px #dc2626;
-      border: 2px solid #ffedd5;
-      text-shadow: 0 0 4px #fff;
-      transition: top 0.1s linear;
-    }
-    /* 魔法光束粒子 */
-    .magic-spell {
-      position: absolute;
-      width: 10px;
-      height: 25px;
-      background: linear-gradient(to top, #38bdf8, #ffffff);
-      border-radius: 5px;
-      box-shadow: 0 0 15px #38bdf8, 0 0 25px #c084fc;
-      z-index: 4;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -168,12 +250,17 @@
   </header>
 
   <div id="game-canvas">
-    <div id="mage-staff">🔮🪄</div>
+    <!-- 水元素法杖 -->
+    <div id="mage-staff-container">
+      <div class="staff-head"></div>
+      <div class="staff-orb"></div>
+      <div class="staff-handle"></div>
+    </div>
     
     <div id="start-screen" class="overlay">
       <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        詠唱咒語，從法杖發射魔法抵銷墜落的火球！<br>關卡 1：基準鍵 ASDF JKL
+        操控法杖發射水球魔法，抵銷墜落的烈焰火球！<br>關卡 1：基準鍵 ASDF JKL
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
@@ -226,7 +313,7 @@
 
     let hp = 100, score = 0, combo = 0, level = 1, isPlaying = false;
     let enemies = [];
-    let spells = [];
+    let waterSpells = [];
     let gameInterval = null, spawnInterval = null;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -247,9 +334,9 @@
       if (audioCtx.state === 'suspended') audioCtx.resume();
       hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
       enemies.forEach(e => e.el.remove());
-      spells.forEach(s => s.el.remove());
+      waterSpells.forEach(s => s.el.remove());
       enemies = [];
-      spells = [];
+      waterSpells = [];
 
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
@@ -276,9 +363,13 @@
       const canvas = document.getElementById('game-canvas');
       const x = Math.floor(Math.random() * (canvas.clientWidth - 60)) + 10;
 
+      // 創建帶尾焰火球容器
       const el = document.createElement('div');
-      el.className = 'fireball';
-      el.innerText = char;
+      el.className = 'fireball-container';
+      el.innerHTML = `
+        <div class="fire-tail"></div>
+        <div class="fireball-head">${char}</div>
+      `;
       el.style.left = x + 'px';
       el.style.top = '0px';
       canvas.appendChild(el);
@@ -286,25 +377,41 @@
       enemies.push({ char, x, y: 0, speed: 1.0 + (level * 0.4), el });
     }
 
-    function shootSpell(targetX, targetY, targetIndex) {
+    function shootWaterOrb(targetX, targetY, targetEnemy) {
       const canvas = document.getElementById('game-canvas');
+      const staffContainer = document.getElementById('mage-staff-container');
+      
       const staffX = canvas.clientWidth / 2;
-      const staffY = canvas.clientHeight - 20;
+      const staffY = canvas.clientHeight - 30;
 
+      // 計算法杖旋轉角度指向火球
+      const angleRad = Math.atan2(targetY - staffY, (targetX + 25) - staffX);
+      const angleDeg = (angleRad * 180 / Math.PI) + 90; // 調整角度偏移
+      staffContainer.style.transform = `rotate(${angleDeg}deg)`;
+
+      // 創建水球
       const el = document.createElement('div');
-      el.className = 'magic-spell';
+      el.className = 'water-orb';
       el.style.left = staffX + 'px';
       el.style.top = staffY + 'px';
       canvas.appendChild(el);
 
-      spells.push({
+      waterSpells.push({
         x: staffX,
         y: staffY,
-        targetX: targetX + 20,
-        targetY: targetY + 20,
-        targetIndex: targetIndex,
+        targetEnemy: targetEnemy,
         el: el
       });
+    }
+
+    function createExplosion(x, y) {
+      const canvas = document.getElementById('game-canvas');
+      const exp = document.createElement('div');
+      exp.className = 'explosion';
+      exp.style.left = x + 'px';
+      exp.style.top = y + 'px';
+      canvas.appendChild(exp);
+      setTimeout(() => exp.remove(), 300);
     }
 
     function updateGame() {
@@ -317,10 +424,11 @@
         e.y += e.speed;
         e.el.style.top = e.y + 'px';
 
-        if (e.y >= canvasHeight - 50) {
+        if (e.y >= canvasHeight - 65) {
           hp -= 10;
           combo = 0;
           playBeep(150, 0.2);
+          createExplosion(e.x + 25, canvasHeight - 20);
           e.el.remove();
           enemies.splice(i, 1);
           updateHUD();
@@ -329,23 +437,36 @@
         }
       }
 
-      // 更新魔法光束飛行與抵銷
-      for (let i = spells.length - 1; i >= 0; i--) {
-        let s = spells[i];
-        const dx = s.targetX - s.x;
-        const dy = s.targetY - s.y;
+      // 更新水球飛行與抵銷爆炸
+      for (let i = waterSpells.length - 1; i >= 0; i--) {
+        let s = waterSpells[i];
+        const target = s.targetEnemy;
+
+        if (!enemies.includes(target)) {
+          // 若目標已被其他魔法消失，移除水球
+          s.el.remove();
+          waterSpells.splice(i, 1);
+          continue;
+        }
+
+        const targetX = target.x + 25;
+        const targetY = target.y + 40;
+        const dx = targetX - s.x;
+        const dy = targetY - s.y;
         const dist = Math.hypot(dx, dy);
 
-        if (dist < 20) {
-          // 相撞抵銷！爆炸消除火球
+        if (dist < 25) {
+          // 相撞抵銷爆炸！
           s.el.remove();
-          spells.splice(i, 1);
+          waterSpells.splice(i, 1);
 
-          const targetEnemy = enemies[s.targetIndex];
-          if (targetEnemy) {
-            playBeep(600, 0.1);
-            targetEnemy.el.remove();
-            enemies.splice(s.targetIndex, 1);
+          createExplosion(targetX, targetY);
+          playBeep(650, 0.12);
+
+          const eIdx = enemies.indexOf(target);
+          if (eIdx !== -1) {
+            target.el.remove();
+            enemies.splice(eIdx, 1);
             combo++;
             score += 10 + combo * 2;
 
@@ -359,8 +480,8 @@
             updateHUD();
           }
         } else {
-          s.x += (dx / dist) * 22; // 飛向火球的速度
-          s.y += (dy / dist) * 22;
+          s.x += (dx / dist) * 25; // 水球飛行速度
+          s.y += (dy / dist) * 25;
           s.el.style.left = s.x + 'px';
           s.el.style.top = s.y + 'px';
         }
@@ -401,10 +522,9 @@
         setTimeout(() => keyEl.classList.remove('active'), 120);
       }
 
-      const index = enemies.findIndex(e => e.char === k);
-      if (index !== -1) {
-        // 從法杖發射魔法光束飛向該火球
-        shootSpell(enemies[index].x, enemies[index].y, index);
+      const targetEnemy = enemies.find(e => e.char === k);
+      if (targetEnemy) {
+        shootWaterOrb(targetEnemy.x, targetEnemy.y, targetEnemy);
       } else {
         combo = 0;
         updateHUD();
