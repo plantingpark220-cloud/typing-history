@@ -6,17 +6,19 @@
   <title>SpellCraft Typing 鍵盤魔導士</title>
   <style>
     :root {
-      --bg-color: #0b090a;
-      --panel-bg: rgba(20, 15, 12, 0.88);
-      --border-gold: #c9a050;
-      --border-dark-gold: #785a22;
+      --bg-color: #0b090e;
+      --panel-bg: rgba(26, 18, 14, 0.92);
+      --border-gold: #d4af37;
+      --border-dark-gold: #8a6d20;
       --text-gold: #fde047;
       --text-main: #f3f4f6;
       --danger: #ef4444;
+      --parchment-bg: rgba(245, 230, 200, 0.95);
+      --parchment-text: #2a1a08;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Georgia', 'Times New Roman', serif;
       background: var(--bg-color);
       color: var(--text-main);
       min-height: 100vh;
@@ -24,43 +26,63 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      /* 全局背景：深色奇幻城堡夜景微光 */
-      background-image: radial-gradient(circle at 50% 30%, #1a1528 0%, #050406 85%);
       padding: 10px;
+      overflow: hidden;
     }
+
+    /* 遊戲主要外框容器 */
+    .game-wrapper {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      border: 3px solid var(--border-gold);
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.9), inset 0 0 15px rgba(212,175,55,0.3);
+      overflow: hidden;
+      background: #120e0b;
+    }
+
     header {
       width: 100%;
-      max-width: 900px;
-      padding: 10px 16px;
+      padding: 12px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(180deg, #2a1f18, #140d0a);
-      border: 2px solid var(--border-gold);
-      border-radius: 12px 12px 0 0;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+      background: linear-gradient(180deg, #3d2a1d, #1c120c);
+      border-bottom: 2px solid var(--border-gold);
     }
-    .title { font-size: 16px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 8px rgba(201,160,80,0.6); }
-    .hud { display: flex; gap: 12px; font-size: 13px; }
+    .title { 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: var(--text-gold); 
+      text-shadow: 0 0 10px rgba(212,175,55,0.7); 
+      letter-spacing: 1px; 
+    }
+    .hud { display: flex; gap: 15px; font-size: 14px; }
     .hud-val { color: #38bdf8; font-weight: bold; font-family: monospace; }
     
     #game-canvas {
       width: 100%;
-      max-width: 900px;
-      height: 360px;
-      /* 遊戲背景：帶有中世紀歐式奇幻與羊皮紙調性的背景風格 */
-      background: linear-gradient(rgba(15, 12, 20, 0.75), rgba(10, 8, 14, 0.85)), 
-                  radial-gradient(ellipse at bottom, #3b281c 0%, #0d0a12 100%);
-      border-left: 2px solid var(--border-gold);
-      border-right: 2px solid var(--border-gold);
+      height: 380px;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+      background: #131018;
+    }
+
+    /* 中世紀手繪風城堡繪製圖層 */
+    #bg-art-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
     }
 
     #boss-container {
       position: absolute;
-      top: 10px;
+      top: 15px;
       left: 50%;
       transform: translateX(-50%);
       display: none;
@@ -68,15 +90,20 @@
       align-items: center;
       gap: 4px;
       z-index: 6;
+      background: rgba(10, 8, 12, 0.7);
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-gold);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.8);
     }
-    .boss-sprite { font-size: 48px; filter: drop-shadow(0 0 12px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
-    .boss-sprite.abyssal { filter: drop-shadow(0 0 18px #a855f7); }
+    .boss-sprite { font-size: 52px; filter: drop-shadow(0 0 12px #ef4444); animation: bossFloat 2s infinite alternate ease-in-out; }
+    .boss-sprite.abyssal { filter: drop-shadow(0 0 20px #a855f7) drop-shadow(0 0 30px #7e22ce); }
     
-    .boss-bar-bg { width: 230px; height: 15px; background: rgba(0,0,0,0.8); border: 2px solid var(--border-gold); border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.9); }
+    .boss-bar-bg { width: 240px; height: 16px; background: rgba(0,0,0,0.9); border: 2px solid var(--border-gold); border-radius: 8px; overflow: hidden; }
     .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width 0.2s; }
-    .boss-bar-fill.abyssal-fill { background: linear-gradient(90deg, #a855f7, #ef4444); }
+    .boss-bar-fill.abyssal-fill { background: linear-gradient(90deg, #9333ea, #ec4899); }
     
-    .boss-name { font-size: 13px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 6px #000; letter-spacing: 1.5px; }
+    .boss-name { font-size: 14px; color: #fca5a5; font-weight: bold; text-shadow: 0 0 6px #000; letter-spacing: 1.5px; }
 
     @keyframes bossFloat {
       from { transform: translateY(0); }
@@ -109,7 +136,7 @@
     .staff-head {
       width: 40px;
       height: 35px;
-      border: 3px solid #334155;
+      border: 3px solid #78350f;
       border-bottom: none;
       border-radius: 20px 20px 0 0;
       position: absolute;
@@ -120,7 +147,7 @@
     .staff-handle {
       width: 6px;
       height: 65px;
-      background: linear-gradient(to bottom, #1e293b, #0f172a);
+      background: linear-gradient(to bottom, #451a03, #1c0d02);
       position: absolute;
       top: 35px;
       left: 27px;
@@ -139,6 +166,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      z-index: 3;
     }
     .fire-tail {
       width: 24px;
@@ -205,47 +233,11 @@
       100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
     }
 
-    /* 中世紀黑鐵與古木質感鍵盤 */
-    .keyboard {
-      width: 100%;
-      max-width: 900px;
-      background: linear-gradient(180deg, #1f1712, #120d0a);
-      border: 2px solid var(--border-gold);
-      border-radius: 0 0 12px 12px;
-      padding: 10px 5px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.8);
-    }
-    .key-row { display: flex; justify-content: center; gap: 4px; }
-    .key {
-      flex: 1;
-      max-width: 45px;
-      height: 45px;
-      background: linear-gradient(145deg, #2b211a, #18120e);
-      border: 1px solid var(--border-dark-gold);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 16px;
-      color: #d1d5db;
-      transition: all 0.1s ease;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
-    }
-    .key.active {
-      background: var(--border-gold);
-      color: #000;
-      box-shadow: 0 0 15px var(--text-gold);
-      transform: scale(0.92);
-    }
+    /* 古典羊皮紙風格選單 */
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(13, 10, 16, 0.92);
+      background: rgba(10, 8, 12, 0.85);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -253,35 +245,92 @@
       gap: 15px;
       z-index: 10;
     }
+
+    .parchment-card {
+      background: var(--parchment-bg);
+      color: var(--parchment-text);
+      border: 3px solid #8a6d20;
+      border-radius: 12px;
+      padding: 24px 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(184, 134, 11, 0.3);
+      text-align: center;
+      max-width: 460px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
     .btn {
-      padding: 12px 32px;
-      background: linear-gradient(135deg, #c9a050, #8e5225);
-      border: 1px solid #fef08a;
+      padding: 12px 36px;
+      background: linear-gradient(135deg, #8a5a22, #4a2f11);
+      border: 2px solid var(--border-gold);
       border-radius: 8px;
-      color: #fff;
+      color: var(--text-gold);
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(201,160,80,0.4);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212,175,55,0.4);
     }
     .btn:active { transform: scale(0.95); }
 
+    /* 中世紀黑鐵與石磚鍵盤 */
+    .keyboard {
+      width: 100%;
+      background: linear-gradient(180deg, #241a13, #120c08);
+      border-top: 2px solid var(--border-gold);
+      padding: 14px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.8);
+    }
+    .key-row { display: flex; justify-content: center; gap: 5px; }
+    .key {
+      flex: 1;
+      max-width: 48px;
+      height: 48px;
+      background: linear-gradient(145deg, #36281e, #1c140e);
+      border: 1px solid var(--border-dark-gold);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 17px;
+      color: #e5e7eb;
+      transition: all 0.1s ease;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.7);
+    }
+    .key.active {
+      background: var(--border-gold);
+      color: #000;
+      box-shadow: 0 0 18px var(--text-gold);
+      transform: scale(0.92);
+    }
+
     .heatmap-box {
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(42, 26, 12, 0.9);
       border: 1px solid var(--border-gold);
       border-radius: 8px;
       padding: 10px 15px;
-      width: 85%;
-      max-width: 400px;
-      font-size: 12px;
+      width: 100%;
+      font-size: 13px;
       text-align: left;
+      color: #3b2005;
     }
     .heatmap-tag {
       display: inline-block;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #fca5a5;
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid #dc2626;
+      color: #991b1b;
       padding: 2px 6px;
       border-radius: 4px;
       margin: 2px;
@@ -291,61 +340,155 @@
 </head>
 <body>
 
-  <header>
-    <div class="title">✨ SpellCraft Typing</div>
-    <div class="hud">
-      <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
-      <div>WPM: <span id="wpm-val" class="hud-val">0</span></div>
-      <div>ACC: <span id="acc-val" class="hud-val">100%</span></div>
-      <div>分: <span id="score-val" class="hud-val">0</span></div>
-      <div>關: <span id="level-val" class="hud-val">1/6</span></div>
-    </div>
-  </header>
+  <div class="game-wrapper">
+    <header>
+      <div class="title">✨ SpellCraft Typing</div>
+      <div class="hud">
+        <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
+        <div>WPM: <span id="wpm-val" class="hud-val">0</span></div>
+        <div>ACC: <span id="acc-val" class="hud-val">100%</span></div>
+        <div>分: <span id="score-val" class="hud-val">0</span></div>
+        <div>關: <span id="level-val" class="hud-val">1/6</span></div>
+      </div>
+    </header>
 
-  <div id="game-canvas">
-    <div id="boss-container">
-      <div class="boss-name" id="boss-title-text">🐉 遠古魔龍 (BOSS)</div>
-      <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
-      <div class="boss-sprite" id="boss-icon">🐉</div>
-    </div>
+    <div id="game-canvas">
+      <!-- 中世紀城堡風景繪製畫布 -->
+      <canvas id="bg-art-canvas"></canvas>
 
-    <div id="mage-staff-container">
-      <div class="staff-head"></div>
-      <div class="staff-orb"></div>
-      <div class="staff-handle"></div>
-    </div>
-    
-    <div id="start-screen" class="overlay">
-      <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
-      <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
-      </p>
-      <button class="btn" id="start-btn">開始詠唱試煉</button>
-    </div>
-
-    <div id="level-up-screen" class="overlay" style="display: none;">
-      <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
-      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text"></p>
-      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
-      <button class="btn" id="next-level-btn">進入下一關</button>
-    </div>
-
-    <div id="gameover-screen" class="overlay" style="display: none;">
-      <h1 id="end-title" style="color: var(--text-gold); font-size: 22px;">試煉結果</h1>
-      <p id="end-desc" style="color: #94a3b8; font-size: 13px; text-align: center;"></p>
-      
-      <div class="heatmap-box" id="heatmap-panel">
-        <div style="color:var(--text-gold); font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
-        <div id="heatmap-content" style="color:#cbd5e1;">系統分析中...</div>
+      <div id="boss-container">
+        <div class="boss-name" id="boss-title-text">🐉 遠古魔龍 (BOSS)</div>
+        <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-hp-fill"></div></div>
+        <div class="boss-sprite" id="boss-icon">🐉</div>
       </div>
 
-      <button class="btn" id="restart-btn">重新嘗試</button>
+      <div id="mage-staff-container">
+        <div class="staff-head"></div>
+        <div class="staff-orb"></div>
+        <div class="staff-handle"></div>
+      </div>
+      
+      <!-- 開始畫面 (羊皮紙風格) -->
+      <div id="start-screen" class="overlay">
+        <div class="parchment-card">
+          <h1 style="color: #6b21a8; font-size: 24px; font-weight: bold;">🏰 魔法學院鍵盤試煉</h1>
+          <p style="font-size: 14px; line-height: 1.6;">
+            揮舞水元素法杖擊退烈焰火球！<br>
+            <b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
+          </p>
+          <button class="btn" id="start-btn">開始詠唱試煉</button>
+        </div>
+      </div>
+
+      <!-- 關卡突破畫面 -->
+      <div id="level-up-screen" class="overlay" style="display: none;">
+        <div class="parchment-card">
+          <h1 style="color: #0284c7; font-size: 24px; font-weight: bold;">✨ 關卡突破！</h1>
+          <p style="color: #854d0e; font-size: 18px; font-weight: bold;" id="rank-title-text"></p>
+          <p style="font-size: 14px; line-height: 1.5;" id="level-up-desc"></p>
+          <button class="btn" id="next-level-btn">進入下一關</button>
+        </div>
+      </div>
+
+      <!-- 結算畫面 -->
+      <div id="gameover-screen" class="overlay" style="display: none;">
+        <div class="parchment-card">
+          <h1 id="end-title" style="color: #9a3412; font-size: 24px; font-weight: bold;">試煉結果</h1>
+          <p id="end-desc" style="font-size: 14px; line-height: 1.5;"></p>
+          
+          <div class="heatmap-box" id="heatmap-panel">
+            <div style="font-weight:bold; margin-bottom:5px;">📊 學習效益與錯字熱點分析 (Heatmap)</div>
+            <div id="heatmap-content">系統分析中...</div>
+          </div>
+
+          <button class="btn" id="restart-btn">重新嘗試</button>
+        </div>
+      </div>
     </div>
+
+    <div class="keyboard" id="virtual-keyboard"></div>
   </div>
 
-  <div class="keyboard" id="virtual-keyboard"></div>
-
   <script>
+    // 繪製中世紀小鎮與城堡圖案背景
+    function drawMedievalBackground() {
+      const cvs = document.getElementById('bg-art-canvas');
+      const ctx = cvs.getContext('2d');
+      cvs.width = cvs.parentElement.clientWidth;
+      cvs.height = cvs.parentElement.clientHeight;
+
+      const w = cvs.width;
+      const h = cvs.height;
+
+      // 天空漸層 (黃昏與夜幕過渡)
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, h);
+      skyGradient.addColorStop(0, '#110b1a');
+      skyGradient.addColorStop(0.5, '#2a1a2e');
+      skyGradient.addColorStop(0.8, '#59323c');
+      skyGradient.addColorStop(1, '#824936');
+      ctx.fillStyle = skyGradient;
+      ctx.fillRect(0, 0, w, h);
+
+      // 遠山
+      ctx.fillStyle = '#221526';
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.7);
+      ctx.lineTo(w * 0.2, h * 0.5);
+      ctx.lineTo(w * 0.45, h * 0.65);
+      ctx.lineTo(w * 0.75, h * 0.48);
+      ctx.lineTo(w, h * 0.68);
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.fill();
+
+      // 中景：中世紀小鎮房屋與尖頂城堡輪廓
+      ctx.fillStyle = '#160d19';
+      
+      // 城堡塔樓 1
+      ctx.fillRect(w * 0.1, h * 0.4, 45, h * 0.6);
+      ctx.beginPath();
+      ctx.moveTo(w * 0.1 - 5, h * 0.4);
+      ctx.lineTo(w * 0.1 + 22.5, h * 0.22);
+      ctx.lineTo(w * 0.1 + 50, h * 0.4);
+      ctx.fill();
+
+      // 城堡塔樓 2 (主塔)
+      ctx.fillRect(w * 0.8, h * 0.3, 60, h * 0.7);
+      ctx.beginPath();
+      ctx.moveTo(w * 0.8 - 8, h * 0.3);
+      ctx.lineTo(w * 0.8 + 30, h * 0.1);
+      ctx.lineTo(w * 0.8 + 68, h * 0.3);
+      ctx.fill();
+
+      // 小鎮連排房屋屋頂
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.8);
+      ctx.lineTo(w * 0.15, h * 0.65);
+      ctx.lineTo(w * 0.3, h * 0.78);
+      ctx.lineTo(w * 0.5, h * 0.62);
+      ctx.lineTo(w * 0.68, h * 0.75);
+      ctx.lineTo(w * 0.85, h * 0.6);
+      ctx.lineTo(w, h * 0.72);
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.fill();
+
+      // 房屋窗戶微光效果
+      ctx.fillStyle = '#fde047';
+      ctx.shadowColor = '#fde047';
+      ctx.shadowBlur = 8;
+      
+      const windowPositions = [
+        [w * 0.12, h * 0.48], [w * 0.14, h * 0.55],
+        [w * 0.82, h * 0.38], [w * 0.85, h * 0.46], [w * 0.82, h * 0.55],
+        [w * 0.22, h * 0.72], [w * 0.42, h * 0.70], [w * 0.62, h * 0.74]
+      ];
+      windowPositions.forEach(([wx, wy]) => {
+        ctx.fillRect(wx, wy, 8, 12);
+      });
+      ctx.shadowBlur = 0; // 重置光暈
+    }
+
     const keysLayout = [
       ["Q","W","E","R","T","Y","U","I","O","P"],
       ["A","S","D","F","G","H","J","K","L",";"],
@@ -486,7 +629,6 @@
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
-    // 第 5 關與第 6 關的 BOSS 兩階段進化設定
     function setupBossStage() {
       const bossUI = document.getElementById('boss-container');
       const bossTitle = document.getElementById('boss-title-text');
@@ -496,7 +638,6 @@
       bossUI.style.display = 'flex';
 
       if (level === 5) {
-        // Stage 5：遠古魔龍 (120 HP)
         maxBossHp = 120;
         bossHp = maxBossHp;
         bossTitle.innerText = "🐉 遠古魔龍 (BOSS)";
@@ -505,7 +646,6 @@
         bossIcon.classList.remove('abyssal');
         bossBarFill.classList.remove('abyssal-fill');
       } else if (level === 6) {
-        // Stage 6：狂暴進化為【深淵魔龍】(180 HP)
         maxBossHp = 180;
         bossHp = maxBossHp;
         bossTitle.innerText = "🐲 深淵魔龍 (BOSS)";
@@ -765,13 +905,13 @@
         document.getElementById('end-title').innerText = '🎉 成功討伐深淵魔龍！';
         document.getElementById('end-desc').innerHTML = `
           完美擊退深淵魔龍！<br>
-          最終評定位階：<b style="color:var(--text-gold); font-size: 20px;">${finalRankTitle}</b><br>
+          最終評定位階：<b style="color:#854d0e; font-size: 20px;">${finalRankTitle}</b><br>
         `;
       } else {
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
-          當前關卡評定：<b style="color:var(--text-gold); font-size: 18px;">${finalRankTitle}</b><br>
-          <span style="color:#ef4444; font-size:12px;">高階咒語錯字率偏高，請提升盲打精準度！</span>
+          當前關卡評定：<b style="color:#854d0e; font-size: 18px;">${finalRankTitle}</b><br>
+          <span style="color:#dc2626; font-size:12px;">高階咒語錯字率偏高，請提升盲打精準度！</span>
         `;
       }
 
@@ -784,7 +924,7 @@
           heatmapHtml += `<span class="heatmap-tag">${k} (${errorHeatmap[k]}次)</span>`;
         });
       } else {
-        heatmapHtml += `<span style="color:#22c55e;">完美表現！未出現明顯易錯按鍵。</span>`;
+        heatmapHtml += `<span style="color:#16a34a;">完美表現！未出現明顯易錯按鍵。</span>`;
       }
 
       document.getElementById('heatmap-content').innerHTML = heatmapHtml;
@@ -869,7 +1009,11 @@
     document.getElementById('next-level-btn').addEventListener('click', resumeNextLevel);
     document.getElementById('restart-btn').addEventListener('click', startGame);
 
+    // 初始化中世紀背景繪製與虛擬鍵盤
+    drawMedievalBackground();
     initKeyboard();
+
+    window.addEventListener('resize', drawMedievalBackground);
   </script>
 </body>
 </html>
