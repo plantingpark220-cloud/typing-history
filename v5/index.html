@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SpellCraft Typing 鍵盤魔導士</title>
   <style>
     :root {
@@ -15,7 +15,7 @@
       --text-main: #f1f5f9;
       --danger: #ef4444;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-color);
@@ -26,12 +26,12 @@
       align-items: center;
       justify-content: center;
       background-image: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #090a0f 70%);
-      padding: 20px;
+      padding: 10px;
     }
     header {
       width: 100%;
       max-width: 900px;
-      padding: 15px 20px;
+      padding: 10px 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -40,19 +40,29 @@
       border-radius: 12px 12px 0 0;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
-    .title { font-size: 20px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 10px rgba(201,160,80,0.5); }
-    .hud { display: flex; gap: 20px; font-size: 16px; }
+    .title { font-size: 16px; font-weight: bold; color: var(--text-gold); text-shadow: 0 0 10px rgba(201,160,80,0.5); }
+    .hud { display: flex; gap: 12px; font-size: 14px; }
     .hud-val { color: var(--accent-blue); font-weight: bold; }
     #game-canvas {
       width: 100%;
       max-width: 900px;
-      height: 400px;
-      background: rgba(10, 12, 24, 0.7);
+      height: 340px;
+      background: rgba(10, 12, 24, 0.8);
       border-left: 2px solid var(--border-gold);
       border-right: 2px solid var(--border-gold);
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+    }
+    /* 魔法杖視覺效果 */
+    #mage-staff {
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 32px;
+      z-index: 5;
+      filter: drop-shadow(0 0 10px var(--accent-blue));
     }
     .keyboard {
       width: 100%;
@@ -60,15 +70,16 @@
       background: var(--panel-bg);
       border: 2px solid var(--border-gold);
       border-radius: 0 0 12px 12px;
-      padding: 15px;
+      padding: 10px 5px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
-    .key-row { display: flex; justify-content: center; gap: 6px; }
+    .key-row { display: flex; justify-content: center; gap: 4px; }
     .key {
-      width: 45px;
+      flex: 1;
+      max-width: 45px;
       height: 45px;
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(201,160,80,0.4);
@@ -80,6 +91,7 @@
       font-size: 16px;
       color: #94a3b8;
       transition: all 0.1s ease;
+      cursor: pointer;
     }
     .key.active {
       background: var(--border-gold);
@@ -95,7 +107,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 15px;
       z-index: 10;
     }
     .btn {
@@ -108,48 +120,66 @@
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(201,160,80,0.4);
-      transition: transform 0.2s, background 0.2s;
+      transition: transform 0.2s;
     }
-    .btn:hover { transform: scale(1.05); }
-    .enemy {
+    .btn:active { transform: scale(0.95); }
+    
+    /* 熾熱火球造型 */
+    .fireball {
       position: absolute;
-      width: 50px;
-      height: 50px;
-      background: rgba(192, 132, 252, 0.2);
-      border: 2px solid var(--accent-purple);
+      width: 48px;
+      height: 48px;
+      background: radial-gradient(circle, #fef08a 20%, #f97316 60%, #dc2626 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: 900;
       font-size: 22px;
-      color: var(--text-gold);
-      box-shadow: 0 0 15px var(--accent-purple);
+      color: #111;
+      box-shadow: 0 0 20px #f97316, 0 0 35px #dc2626;
+      border: 2px solid #ffedd5;
+      text-shadow: 0 0 4px #fff;
       transition: top 0.1s linear;
+    }
+    /* 魔法光束粒子 */
+    .magic-spell {
+      position: absolute;
+      width: 10px;
+      height: 25px;
+      background: linear-gradient(to top, #38bdf8, #ffffff);
+      border-radius: 5px;
+      box-shadow: 0 0 15px #38bdf8, 0 0 25px #c084fc;
+      z-index: 4;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="title">✨ SpellCraft Typing：鍵盤魔導士</div>
+    <div class="title">✨ SpellCraft Typing</div>
     <div class="hud">
-      <div>生命值: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
-      <div>分數: <span id="score-val" class="hud-val">0</span></div>
+      <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
+      <div>分: <span id="score-val" class="hud-val">0</span></div>
       <div>連擊: <span id="combo-val" class="hud-val">0x</span></div>
-      <div>關卡: <span id="level-val" class="hud-val">1/3</span></div>
+      <div>關: <span id="level-val" class="hud-val">1/3</span></div>
     </div>
   </header>
 
   <div id="game-canvas">
+    <div id="mage-staff">🔮🪄</div>
+    
     <div id="start-screen" class="overlay">
-      <h1 style="color: var(--text-gold); font-size: 32px;">魔法學院鍵盤試煉</h1>
-      <p style="color: #94a3b8;">詠唱正確的符文與咒語，擊退進犯的魔物！</p>
+      <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
+      <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
+        詠唱咒語，從法杖發射魔法抵銷墜落的火球！<br>關卡 1：基準鍵 ASDF JKL
+      </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
     <div id="gameover-screen" class="overlay" style="display: none;">
-      <h1 id="end-title" style="color: var(--text-gold); font-size: 32px;">試煉結果</h1>
-      <p id="end-desc" style="color: #94a3b8; font-size: 18px;"></p>
+      <h1 id="end-title" style="color: var(--text-gold); font-size: 24px;">試煉結果</h1>
+      <p id="end-desc" style="color: #94a3b8; font-size: 15px; text-align: center;"></p>
       <button class="btn" id="restart-btn">重新嘗試</button>
     </div>
   </div>
@@ -163,6 +193,12 @@
       ["Z","X","C","V","B","N","M"]
     ];
 
+    const levelKeyPool = {
+      1: "ASDFJKL",
+      2: "ASDFJKLQWERTYUIOP",
+      3: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    };
+
     function initKeyboard() {
       const container = document.getElementById('virtual-keyboard');
       container.innerHTML = '';
@@ -174,6 +210,14 @@
           keyDiv.className = 'key';
           keyDiv.id = `key-${k}`;
           keyDiv.innerText = k;
+
+          const handleInput = (e) => {
+            e.preventDefault();
+            handleKeyPress(k);
+          };
+          keyDiv.addEventListener('touchstart', handleInput, { passive: false });
+          keyDiv.addEventListener('click', handleInput);
+
           rowDiv.appendChild(keyDiv);
         });
         container.appendChild(rowDiv);
@@ -182,6 +226,7 @@
 
     let hp = 100, score = 0, combo = 0, level = 1, isPlaying = false;
     let enemies = [];
+    let spells = [];
     let gameInterval = null, spawnInterval = null;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -199,42 +244,74 @@
     }
 
     function startGame() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
       enemies.forEach(e => e.el.remove());
+      spells.forEach(s => s.el.remove());
       enemies = [];
+      spells = [];
 
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
       updateHUD();
 
+      resetSpawning();
       if (gameInterval) clearInterval(gameInterval);
-      if (spawnInterval) clearInterval(spawnInterval);
+      gameInterval = setInterval(updateGame, 30);
+    }
 
-      gameInterval = setInterval(updateGame, 50);
-      spawnInterval = setInterval(spawnEnemy, 1500);
+    function resetSpawning() {
+      if (spawnInterval) clearInterval(spawnInterval);
+      const spawnTime = Math.max(800, 2200 - (level * 500));
+      spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
     function spawnEnemy() {
       if (!isPlaying) return;
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const maxEnemies = level + 2; 
+      if (enemies.length >= maxEnemies) return;
+
+      const chars = levelKeyPool[level];
       const char = chars[Math.floor(Math.random() * chars.length)];
       const canvas = document.getElementById('game-canvas');
       const x = Math.floor(Math.random() * (canvas.clientWidth - 60)) + 10;
 
       const el = document.createElement('div');
-      el.className = 'enemy';
+      el.className = 'fireball';
       el.innerText = char;
       el.style.left = x + 'px';
       el.style.top = '0px';
       canvas.appendChild(el);
 
-      enemies.push({ char, x, y: 0, speed: 1.5 + level * 0.5, el });
+      enemies.push({ char, x, y: 0, speed: 1.0 + (level * 0.4), el });
+    }
+
+    function shootSpell(targetX, targetY, targetIndex) {
+      const canvas = document.getElementById('game-canvas');
+      const staffX = canvas.clientWidth / 2;
+      const staffY = canvas.clientHeight - 20;
+
+      const el = document.createElement('div');
+      el.className = 'magic-spell';
+      el.style.left = staffX + 'px';
+      el.style.top = staffY + 'px';
+      canvas.appendChild(el);
+
+      spells.push({
+        x: staffX,
+        y: staffY,
+        targetX: targetX + 20,
+        targetY: targetY + 20,
+        targetIndex: targetIndex,
+        el: el
+      });
     }
 
     function updateGame() {
       if (!isPlaying) return;
       const canvasHeight = document.getElementById('game-canvas').clientHeight;
 
+      // 更新火球下降
       for (let i = enemies.length - 1; i >= 0; i--) {
         let e = enemies[i];
         e.y += e.speed;
@@ -251,6 +328,43 @@
           if (hp <= 0) gameOver(false);
         }
       }
+
+      // 更新魔法光束飛行與抵銷
+      for (let i = spells.length - 1; i >= 0; i--) {
+        let s = spells[i];
+        const dx = s.targetX - s.x;
+        const dy = s.targetY - s.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 20) {
+          // 相撞抵銷！爆炸消除火球
+          s.el.remove();
+          spells.splice(i, 1);
+
+          const targetEnemy = enemies[s.targetIndex];
+          if (targetEnemy) {
+            playBeep(600, 0.1);
+            targetEnemy.el.remove();
+            enemies.splice(s.targetIndex, 1);
+            combo++;
+            score += 10 + combo * 2;
+
+            let oldLevel = level;
+            if (score >= 180 && level === 2) level = 3;
+            else if (score >= 80 && level === 1) level = 2;
+
+            if (oldLevel !== level) resetSpawning();
+            if (score >= 300) gameOver(true);
+
+            updateHUD();
+          }
+        } else {
+          s.x += (dx / dist) * 22; // 飛向火球的速度
+          s.y += (dy / dist) * 22;
+          s.el.style.left = s.x + 'px';
+          s.el.style.top = s.y + 'px';
+        }
+      }
     }
 
     function updateHUD() {
@@ -265,16 +379,22 @@
       clearInterval(gameInterval);
       clearInterval(spawnInterval);
 
+      let rank = "📜 見習詠唱者";
+      if (score >= 300) rank = "👑 傳奇鍵盤魔導士";
+      else if (score >= 180) rank = "⚔️ 大符文導師";
+      else if (score >= 80) rank = "🔮 初階元素使";
+
       const screen = document.getElementById('gameover-screen');
       document.getElementById('end-title').innerText = win ? '🎉 試煉成功！' : '💀 試煉失敗';
-      document.getElementById('end-desc').innerText = `最終得分：${score} 分 | 最大連擊：${combo}x`;
+      document.getElementById('end-desc').innerHTML = `
+        獲得稱號：<b style="color:var(--text-gold); font-size: 18px;">${rank}</b><br><br>
+        最終得分：${score} 分 | 連擊：${combo}x
+      `;
       screen.style.display = 'flex';
     }
 
-    window.addEventListener('keydown', (e) => {
+    function handleKeyPress(k) {
       if (!isPlaying) return;
-      const k = e.key.toUpperCase();
-
       const keyEl = document.getElementById(`key-${k}`);
       if (keyEl) {
         keyEl.classList.add('active');
@@ -283,21 +403,16 @@
 
       const index = enemies.findIndex(e => e.char === k);
       if (index !== -1) {
-        playBeep(600, 0.1);
-        enemies[index].el.remove();
-        enemies.splice(index, 1);
-        combo++;
-        score += 10 + combo * 2;
-
-        if (score >= 100 && level === 1) level = 2;
-        if (score >= 250 && level === 2) level = 3;
-        if (score >= 400) gameOver(true);
-
-        updateHUD();
+        // 從法杖發射魔法光束飛向該火球
+        shootSpell(enemies[index].x, enemies[index].y, index);
       } else {
         combo = 0;
         updateHUD();
       }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      handleKeyPress(e.key.toUpperCase());
     });
 
     document.getElementById('start-btn').addEventListener('click', startGame);
