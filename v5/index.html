@@ -241,7 +241,7 @@
       <div>HP: <span id="hp-val" class="hud-val" style="color:var(--danger);">100</span></div>
       <div>分: <span id="score-val" class="hud-val">0</span></div>
       <div>連擊: <span id="combo-val" class="hud-val">0x</span></div>
-      <div>關: <span id="level-val" class="hud-val">1/3</span></div>
+      <div>關: <span id="level-val" class="hud-val">1/4</span></div>
     </div>
   </header>
 
@@ -255,7 +255,7 @@
     <div id="start-screen" class="overlay">
       <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵深入練習（目標 500 分）</b>
+        揮舞水元素法杖擊退烈焰火球！<br><b>Stage 1： Home Row 基準鍵特訓（ASDFGHJKL;）</b>
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
@@ -263,9 +263,7 @@
     <div id="level-up-screen" class="overlay" style="display: none;">
       <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
       <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text">恭喜獲得稱號：📜 【初階元素使】</p>
-      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc">
-        你已經徹底掌控了基準鍵的肌肉記憶！準備好挑戰 Stage 2 主字區字母了嗎？
-      </p>
+      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc"></p>
       <button class="btn" id="next-level-btn">進入下一關</button>
     </div>
 
@@ -286,9 +284,10 @@
     ];
 
     const levelKeyPool = {
-      1: "ASDFGHJKL;",                   // Stage 1: 完整的 Home Row 基準鍵列
-      2: "ASDFGHJKL;QWERTYUIOP",          // Stage 2: 基準鍵列 + 上排字母
-      3: "ABCDEFGHIJKLMNOPQRSTUVWXYZ;"    // Stage 3: 全 26 字母 + 符號
+      1: "ASDFGHJKL;",                   // Stage 1: 中排基準鍵
+      2: "QWERTYUIOP",                    // Stage 2: 上排字母
+      3: "ZXCVBNM",                       // Stage 3: 下排字母
+      4: "ABCDEFGHIJKLMNOPQRSTUVWXYZ;"    // Stage 4: 終極全字母試煉
     };
 
     function initKeyboard() {
@@ -322,17 +321,58 @@
     let gameInterval = null, spawnInterval = null;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, duration) {
+
+    function playFireSwoosh() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function playSteamExplosion() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const bufferSize = audioCtx.sampleRate * 0.25;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      noise.start();
+
+      const osc = audioCtx.createOscillator();
+      const expGain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.2);
+      expGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      expGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+      osc.connect(expGain);
+      expGain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
     }
 
     function startGame() {
@@ -359,14 +399,13 @@
 
     function resetSpawning() {
       if (spawnInterval) clearInterval(spawnInterval);
-      // 放緩生成速度，避免最後一關反應不過來
-      const spawnTime = Math.max(1100, 2100 - (level * 300));
+      const spawnTime = Math.max(1200, 2200 - (level * 250));
       spawnInterval = setInterval(spawnEnemy, spawnTime);
     }
 
     function spawnEnemy() {
       if (!isPlaying) return;
-      const maxEnemies = Math.min(level + 1, 3); // 限制畫面上同時出現的火球最多 3 個
+      const maxEnemies = Math.min(level + 1, 3);
       if (enemies.length >= maxEnemies) return;
 
       const chars = levelKeyPool[level];
@@ -384,8 +423,8 @@
       el.style.top = '0px';
       canvas.appendChild(el);
 
-      // 放緩下落速度，Stage 3 也平滑好操作
-      enemies.push({ char, x, y: 0, speed: 0.8 + (level * 0.25), el });
+      playFireSwoosh();
+      enemies.push({ char, x, y: 0, speed: 0.75 + (level * 0.2), el });
     }
 
     function shootWaterOrb(targetX, targetY, targetEnemy) {
@@ -456,7 +495,7 @@
         if (e.y >= canvasHeight - 65) {
           hp -= 10;
           combo = 0;
-          playBeep(150, 0.2);
+          playSteamExplosion();
           createExplosion(e.x + 25, canvasHeight - 20);
           e.el.remove();
           enemies.splice(i, 1);
@@ -487,7 +526,7 @@
           waterSpells.splice(i, 1);
 
           createExplosion(targetX, targetY);
-          playBeep(650, 0.12);
+          playSteamExplosion();
 
           const eIdx = enemies.indexOf(target);
           if (eIdx !== -1) {
@@ -497,14 +536,16 @@
             score += 10 + combo * 2;
             updateHUD();
 
-            // 充分練習門檻：500分進入Stage 2，1200分進入Stage 3，2200分通關
-            if (score >= 500 && level === 1) {
-              triggerLevelUp(2, "📜【初階元素使】", "你已熟練掌握 Home Row 基準鍵列！準備迎戰 Stage 2（目標 1200 分，解鎖主字區常用字母）！");
+            if (score >= 300 && level === 1) {
+              triggerLevelUp(2, "📜【初階元素使】", "你已徹底熟練 Home Row 中排基準鍵！準備進入 Stage 2 挑戰上排字母（QWERTYUIOP）！");
               return;
-            } else if (score >= 1200 && level === 2) {
-              triggerLevelUp(3, "⚔️【大符文導師】", "太出色了！你已掌控主字區字母，準備迎戰 Stage 3 最終全字母魔法風暴（目標 2200 分）！");
+            } else if (score >= 700 && level === 2) {
+              triggerLevelUp(3, "⚔️【大符文導師】", "上排字母掌控完美！準備進入 Stage 3 挑戰下排字母（ZXCVBNM）！");
               return;
-            } else if (score >= 2200 && level === 3) {
+            } else if (score >= 1200 && level === 3) {
+              triggerLevelUp(4, "🔮【高階魔法使】", "太出色了！三排指法皆已過關，準備迎接 Stage 4 全字母隨機終極試煉（目標 2000 分）！");
+              return;
+            } else if (score >= 2000 && level === 4) {
               gameOver(true);
               return;
             }
@@ -522,7 +563,7 @@
       document.getElementById('hp-val').innerText = hp;
       document.getElementById('score-val').innerText = score;
       document.getElementById('combo-val').innerText = combo + 'x';
-      document.getElementById('level-val').innerText = level + '/3';
+      document.getElementById('level-val').innerText = level + '/4';
     }
 
     function gameOver(win) {
@@ -531,24 +572,27 @@
       clearInterval(spawnInterval);
       clearCanvasElements();
 
-      // 精準稱號頒發邏輯，不再無腦送傳奇稱號
-      let currentRank = "🌱 見習學徒";
-      if (score >= 1200) currentRank = "⚔️ 大符文導師";
-      else if (score >= 500) currentRank = "📜 初階元素使";
-
       const screen = document.getElementById('gameover-screen');
+
       if (win) {
         document.getElementById('end-title').innerText = '🎉 試煉成功！';
         document.getElementById('end-desc').innerHTML = `
-          獲得最高榮譽：<b style="color:var(--text-gold); font-size: 18px;">👑 傳奇鍵盤魔導士</b><br><br>
+          完美突破四大關卡！<br>
+          獲得最高榮譽稱號：<b style="color:var(--text-gold); font-size: 22px;">👑 【大賢者】</b><br><br>
           最終得分：${score} 分 | 最高連擊：${combo}x
         `;
       } else {
+        let failRank = "🌱 見習學徒";
+        if (score >= 1200) failRank = "🔮 高階魔法使";
+        else if (score >= 700) failRank = "⚔️ 大符文導師";
+        else if (score >= 300) failRank = "📜 初階元素使";
+
         document.getElementById('end-title').innerText = '💀 試煉失敗';
         document.getElementById('end-desc').innerHTML = `
-          當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${currentRank}</b><br><br>
+          生命值歸零！<br>
+          當前達成稱號：<b style="color:var(--text-gold); font-size: 18px;">${failRank}</b><br><br>
           最終得分：${score} 分 | 最高連擊：${combo}x<br>
-          <span style="color:#ef4444; font-size:12px;">生命值歸零，請再接再厲！</span>
+          <span style="color:#ef4444; font-size:13px; margin-top:5px; display:inline-block;">未能通關，無法獲得「大賢者」稱號！</span>
         `;
       }
       screen.style.display = 'flex';
