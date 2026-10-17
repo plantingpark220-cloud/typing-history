@@ -55,7 +55,6 @@
       box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
     }
 
-    /* 藍寶珠法杖樣式 */
     #mage-staff-container {
       position: absolute;
       bottom: -10px;
@@ -105,7 +104,6 @@
       to { box-shadow: 0 0 22px #38bdf8, 0 0 30px #60a5fa; }
     }
 
-    /* 逼真帶尾焰火球 */
     .fireball-container {
       position: absolute;
       width: 50px;
@@ -145,7 +143,6 @@
       100% { transform: scaleX(1.1) scaleY(1.2); opacity: 1; }
     }
 
-    /* 水球魔法粒子 */
     .water-orb {
       position: absolute;
       width: 22px;
@@ -157,7 +154,6 @@
       pointer-events: none;
     }
 
-    /* 爆炸效果 */
     .explosion {
       position: absolute;
       width: 60px;
@@ -214,7 +210,7 @@
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(13, 14, 21, 0.85);
+      background: rgba(13, 14, 21, 0.88);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -250,20 +246,32 @@
   </header>
 
   <div id="game-canvas">
-    <!-- 水元素法杖 -->
     <div id="mage-staff-container">
       <div class="staff-head"></div>
       <div class="staff-orb"></div>
       <div class="staff-handle"></div>
     </div>
     
+    <!-- 開始畫面 -->
     <div id="start-screen" class="overlay">
       <h1 style="color: var(--text-gold); font-size: 24px;">魔法學院鍵盤試煉</h1>
       <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 0 20px;">
-        操控法杖發射水球魔法，抵銷墜落的烈焰火球！<br>關卡 1：基準鍵 ASDF JKL
+        操控法杖發射水球魔法，抵銷墜落的烈焰火球！<br><b>Stage 1：基準鍵 ASDF JKL 訓練</b>
       </p>
       <button class="btn" id="start-btn">開始詠唱試煉</button>
     </div>
+
+    <!-- 關卡升級/獲得稱號過場畫面 -->
+    <div id="level-up-screen" class="overlay" style="display: none;">
+      <h1 style="color: #38bdf8; font-size: 24px;">✨ 關卡突破！</h1>
+      <p style="color: #fef08a; font-size: 18px; margin-top: 5px;" id="rank-title-text">恭喜獲得稱號：📜 【初階元素使】</p>
+      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 80%;" id="level-up-desc">
+        你已經完美掌握了基準鍵！準備好解鎖主字區常用字母了嗎？
+      </p>
+      <button class="btn" id="next-level-btn">進入下一關</button>
+    </div>
+
+    <!-- 遊戲結束/最終結算畫面 -->
     <div id="gameover-screen" class="overlay" style="display: none;">
       <h1 id="end-title" style="color: var(--text-gold); font-size: 24px;">試煉結果</h1>
       <p id="end-desc" style="color: #94a3b8; font-size: 15px; text-align: center;"></p>
@@ -333,18 +341,23 @@
     function startGame() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       hp = 100; score = 0; combo = 0; level = 1; isPlaying = true;
-      enemies.forEach(e => e.el.remove());
-      waterSpells.forEach(s => s.el.remove());
-      enemies = [];
-      waterSpells = [];
+      clearCanvasElements();
 
       document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('level-up-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
       updateHUD();
 
       resetSpawning();
       if (gameInterval) clearInterval(gameInterval);
       gameInterval = setInterval(updateGame, 30);
+    }
+
+    function clearCanvasElements() {
+      enemies.forEach(e => e.el.remove());
+      waterSpells.forEach(s => s.el.remove());
+      enemies = [];
+      waterSpells = [];
     }
 
     function resetSpawning() {
@@ -363,7 +376,6 @@
       const canvas = document.getElementById('game-canvas');
       const x = Math.floor(Math.random() * (canvas.clientWidth - 60)) + 10;
 
-      // 創建帶尾焰火球容器
       const el = document.createElement('div');
       el.className = 'fireball-container';
       el.innerHTML = `
@@ -384,12 +396,10 @@
       const staffX = canvas.clientWidth / 2;
       const staffY = canvas.clientHeight - 30;
 
-      // 計算法杖旋轉角度指向火球
       const angleRad = Math.atan2(targetY - staffY, (targetX + 25) - staffX);
-      const angleDeg = (angleRad * 180 / Math.PI) + 90; // 調整角度偏移
+      const angleDeg = (angleRad * 180 / Math.PI) + 90;
       staffContainer.style.transform = `rotate(${angleDeg}deg)`;
 
-      // 創建水球
       const el = document.createElement('div');
       el.className = 'water-orb';
       el.style.left = staffX + 'px';
@@ -414,11 +424,31 @@
       setTimeout(() => exp.remove(), 300);
     }
 
+    function triggerLevelUp(nextLvl, rankName, desc) {
+      isPlaying = false;
+      clearInterval(gameInterval);
+      clearInterval(spawnInterval);
+      clearCanvasElements();
+
+      document.getElementById('rank-title-text').innerText = `恭喜獲得稱號：${rankName}`;
+      document.getElementById('level-up-desc').innerText = desc;
+      document.getElementById('level-up-screen').style.display = 'flex';
+
+      level = nextLvl;
+      updateHUD();
+    }
+
+    function resumeNextLevel() {
+      document.getElementById('level-up-screen').style.display = 'none';
+      isPlaying = true;
+      resetSpawning();
+      gameInterval = setInterval(updateGame, 30);
+    }
+
     function updateGame() {
       if (!isPlaying) return;
       const canvasHeight = document.getElementById('game-canvas').clientHeight;
 
-      // 更新火球下降
       for (let i = enemies.length - 1; i >= 0; i--) {
         let e = enemies[i];
         e.y += e.speed;
@@ -437,13 +467,11 @@
         }
       }
 
-      // 更新水球飛行與抵銷爆炸
       for (let i = waterSpells.length - 1; i >= 0; i--) {
         let s = waterSpells[i];
         const target = s.targetEnemy;
 
         if (!enemies.includes(target)) {
-          // 若目標已被其他魔法消失，移除水球
           s.el.remove();
           waterSpells.splice(i, 1);
           continue;
@@ -456,7 +484,6 @@
         const dist = Math.hypot(dx, dy);
 
         if (dist < 25) {
-          // 相撞抵銷爆炸！
           s.el.remove();
           waterSpells.splice(i, 1);
 
@@ -469,18 +496,22 @@
             enemies.splice(eIdx, 1);
             combo++;
             score += 10 + combo * 2;
-
-            let oldLevel = level;
-            if (score >= 180 && level === 2) level = 3;
-            else if (score >= 80 && level === 1) level = 2;
-
-            if (oldLevel !== level) resetSpawning();
-            if (score >= 300) gameOver(true);
-
             updateHUD();
+
+            // 關卡過場檢查點
+            if (score >= 80 && level === 1) {
+              triggerLevelUp(2, "📜【初階元素使】", "你已順利掌控基準鍵指法！準備迎戰 Stage 2（解鎖主字區常用字母）！");
+              return;
+            } else if (score >= 180 && level === 2) {
+              triggerLevelUp(3, "⚔️【大符文導師】", "太強了！你已掌握全主字區字母，準備迎戰 Stage 3 最終全字母魔法風暴！");
+              return;
+            } else if (score >= 300 && level === 3) {
+              gameOver(true);
+              return;
+            }
           }
         } else {
-          s.x += (dx / dist) * 25; // 水球飛行速度
+          s.x += (dx / dist) * 25;
           s.y += (dy / dist) * 25;
           s.el.style.left = s.x + 'px';
           s.el.style.top = s.y + 'px';
@@ -499,17 +530,13 @@
       isPlaying = false;
       clearInterval(gameInterval);
       clearInterval(spawnInterval);
-
-      let rank = "📜 見習詠唱者";
-      if (score >= 300) rank = "👑 傳奇鍵盤魔導士";
-      else if (score >= 180) rank = "⚔️ 大符文導師";
-      else if (score >= 80) rank = "🔮 初階元素使";
+      clearCanvasElements();
 
       const screen = document.getElementById('gameover-screen');
       document.getElementById('end-title').innerText = win ? '🎉 試煉成功！' : '💀 試煉失敗';
       document.getElementById('end-desc').innerHTML = `
-        獲得稱號：<b style="color:var(--text-gold); font-size: 18px;">${rank}</b><br><br>
-        最終得分：${score} 分 | 連擊：${combo}x
+        最高稱號：<b style="color:var(--text-gold); font-size: 18px;">👑 傳奇鍵盤魔導士</b><br><br>
+        最終得分：${score} 分 | 最高連擊：${combo}x
       `;
       screen.style.display = 'flex';
     }
@@ -536,6 +563,7 @@
     });
 
     document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('next-level-btn').addEventListener('click', resumeNextLevel);
     document.getElementById('restart-btn').addEventListener('click', startGame);
 
     initKeyboard();
